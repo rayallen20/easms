@@ -122,7 +122,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Log Channel
+    | Logger Channel
     |--------------------------------------------------------------------------
     |
     | If you are using the "log" driver, you may specify the logging channel
