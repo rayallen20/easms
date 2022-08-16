@@ -182,7 +182,6 @@ class User {
 
         // step2. 根据jwt的解析结果查询用户信息 start
         $userModel = new \App\Http\Models\User();
-         $claims['id'] = 2;
         $userOrm = $userModel->findById($claims['id']);
         if ($userOrm == null) {
             $code = Resp::JWT_INVALID;
