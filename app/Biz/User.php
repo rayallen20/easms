@@ -50,7 +50,14 @@ class User {
     */
     public $lastLoginTime;
 
-
+    /**
+     * 本方法用于处理登录操作
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $account 账号
+     * @param string $password 密码
+     * @return int $code 错误码 0表示没有错误
+    */
     public function login($account, $password) {
         // step1. 校验参数名密码是否正确 start
         $code = 0;
@@ -110,7 +117,7 @@ class User {
     */
     private function generateJwt($userOrm) {
         $jwt = new Jwt();
-        $jwt->generate(['id' => $this->id]);
+        $jwt->generate(['id' => $userOrm->id]);
         $this->jwt = $jwt;
     }
 
@@ -151,5 +158,38 @@ class User {
         $this->email = $model->email;
         $this->mobile = $model->mobile;
         $this->role = $model->role->name;
+    }
+
+    /**
+     * 本方法用于处理登出操作
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $jwt jwt值
+     * @return int $code
+    */
+    public function logout($jwt) {
+        $code = 0;
+
+        // step1. 解析jwt start
+        $this->jwt = new Jwt();
+        $this->jwt->token = $jwt;
+        $claims = $this->jwt->parse();
+        if ($claims == null) {
+            $code = Resp::PARSE_JWT_FAILED;
+            return $code;
+        }
+        // step1. 解析jwt end
+
+        // step2. 根据jwt的解析结果查询用户信息 start
+        $userModel = new \App\Http\Models\User();
+         $claims['id'] = 2;
+        $userOrm = $userModel->findById($claims['id']);
+        if ($userOrm == null) {
+            $code = Resp::JWT_INVALID;
+            return $code;
+        }
+        // step2. 根据jwt的解析结果查询用户信息 end
+        $this->fill($userOrm);
+        return $code;
     }
 }

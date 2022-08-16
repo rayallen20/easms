@@ -49,7 +49,7 @@ class User extends Model{
      * @return User $user
     */
     public function findByAccount($account, $password) {
-        $user = $this->where('account', $account)->first();
+        $user = $this->where('account', $account)->where('password', $password)->first();
         return $user;
     }
 
@@ -62,5 +62,16 @@ class User extends Model{
     public function updateLastLoginTime($lastLoginTime) {
         $this->last_login_time = $lastLoginTime;
         return $this->save();
+    }
+
+    /**
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id
+     * @return User $user
+     */
+    public function findById($id) {
+        $user = $this->where('id', $id)->first();
+        return $user;
     }
 }

@@ -27,11 +27,23 @@ class Resp {
     */
     const SAVE_DATABASE_FAILED = 10004;
 
+    /**
+     * @const int PARSE_TOKEN_FAILED 本状态码表示解析jwt至数组失败
+    */
+    const PARSE_JWT_FAILED = 10005;
+
+    /**
+     * @const int TOKEN_INVALID 本状态码表示无法根据token的解析结果查询出一个用户信息
+    */
+    const JWT_INVALID = 10006;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
         self::INCORRECT_PASSWORD => '密码不正确',
-        self::SAVE_DATABASE_FAILED => '数据库写入错误'
+        self::SAVE_DATABASE_FAILED => '数据库写入错误',
+        self::PARSE_JWT_FAILED => '解析token失败',
+        self::JWT_INVALID => 'token无效'
     ];
 
     /**
@@ -106,6 +118,28 @@ class Resp {
      */
     public function success($data) {
         return self::generate(self::SUCCESS, self::MESSAGE[self::SUCCESS], $data);
+    }
+
+    /**
+     * 本方法用于生成当解析token失败时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function parseJwtFailed($data) {
+        return self::generate(self::PARSE_JWT_FAILED, self::MESSAGE[self::PARSE_JWT_FAILED], $data);
+    }
+
+    /**
+     * 本方法用于生成当无法根据jwt中的信息查找到用户信息时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function jwtInvalid($data) {
+        return self::generate(self::JWT_INVALID, self::MESSAGE[self::JWT_INVALID], $data);
     }
 }
 
