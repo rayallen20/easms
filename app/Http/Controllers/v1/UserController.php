@@ -368,17 +368,20 @@ class UserController extends Controller {
     */
     public function list(Request $request) {
         // step1. 接收参数 验证规则 start
+        $jwt = $request->input('user.jwt');
         $currentPage = $request->input('pagination.currentPage');
         $itemPerPage = $request->input('pagination.itemPerPage');
 
         $params = [
             'currentPage' => $currentPage,
             'itemPerPage' => $itemPerPage,
+            'jwt' => $jwt,
         ];
 
         $rules = [
             'currentPage' => 'required|int|min:1',
             'itemPerPage' => 'required|int|min:1',
+            'jwt' => 'required|string',
         ];
 
         $exceptionMessages = [
@@ -388,6 +391,8 @@ class UserController extends Controller {
             'itemPerPage.required' => '每页显示条目不能为空',
             'itemPerPage.int' => '每页显示条目必须为整型',
             'itemPerPage.min' => '每页显示条目不得小于1',
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串'
         ];
 
         $resp = new Resp();
@@ -400,11 +405,30 @@ class UserController extends Controller {
         }
         // step1. 接收参数 验证规则 end
 
-        // step2. 处理逻辑 start
+        // step2. 鉴权 start
         $userBiz = new User();
-        $result = $userBiz->list($currentPage, $itemPerPage);
-        // step2. 处理逻辑 end
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
 
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $result = $userBiz->list($currentPage, $itemPerPage);
+        // step3. 处理逻辑 end
+
+        // step4. 封装返回值结构 start
         $data = [
             'users' => [],
             'pagination' => $result['pagination']
@@ -435,6 +459,8 @@ class UserController extends Controller {
                 'lastLoginTime' => $user->lastLoginTime,
             ];
         }
+        // step4. 封装返回值结构 end
+
         $json = $resp->success($data);
         return $json;
     }
