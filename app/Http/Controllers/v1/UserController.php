@@ -411,6 +411,16 @@ class UserController extends Controller {
         ];
         for ($i = 0; $i <= count($result['users']) - 1; $i++) {
             $user = $result['users'][$i];
+
+            if ($user->email == null) {
+                $user->email = '';
+            }
+
+            if ($user->mobile == null) {
+                $user->mobile = '';
+            }
+
+
             if ($user->lastLoginTime == null) {
                 $user->lastLoginTime = '';
             }
