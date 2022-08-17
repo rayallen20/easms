@@ -2,6 +2,7 @@
 namespace App\Biz;
 
 use App\Lib\Jwt;
+use App\Lib\Pagination;
 use App\Lib\Resp;
 
 class User {
@@ -160,6 +161,7 @@ class User {
         $this->role = new Role();
         $this->role->id = $model->role->id;
         $this->role->name = $model->role->name;
+        $this->lastLoginTime = $model->last_login_time;
     }
 
     /**
@@ -265,12 +267,48 @@ class User {
      * @param string $account 账号
      * @return bool true表示存在 false表示不存在
     */
-    private function existSameAccount(string $account) {
+    private function existSameAccount($account) {
         $model = new \App\Http\Models\User();
         $userOrm = $model->findByAccount($account);
         if ($userOrm == null) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 本方法用于列表展示用户信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $currentPage 当前页数
+     * @param int $itemPerPage 每页显示信息条数
+     * @return array $result 本数组共3项内容:
+     * array<User> $result['users']:用户信息集合
+     * App\Lib\Pagination $result['pagination']:分页器对象
+     * int $result['code']:错误码
+    */
+    public function list($currentPage, $itemPerPage) {
+        $result = [
+            'users' => [],
+            'pagination' => null,
+            'code' => 0
+        ];
+
+        $pagination = new Pagination($currentPage, $itemPerPage);
+        $offset = $pagination->calcOffset();
+
+        $model = new \App\Http\Models\User();
+        $userCollection = $model->findNormalUsers($offset, $itemPerPage);
+        for ($i = 0; $i <= count($userCollection) - 1; $i++) {
+            $userOrm = $userCollection[$i];
+            $user = new User();
+            $user->fill($userOrm);
+            $result['users'][$i] = $user;
+        }
+
+        $totalUserNum = $model->countNormalUser();
+        $pagination->calcTotalPage($totalUserNum);
+        $result['pagination'] = $pagination;
+        return $result;
     }
 }

@@ -71,15 +71,16 @@ class Resp {
      * @param int $code 状态码
      * @param string $message 状态码对应的错误信息
      * @param map<string:interface> $data 有效载荷 注意:该参数只能为关联数组
+     * @param int|null $flag 标注是否在JSON序列化时将元素全部转化为对象的flag
      * @return string 返回至客户端的JSON
     */
-    private function generate($code, $message, $data) {
+    private function generate($code, $message, $data, $flag=JSON_FORCE_OBJECT) {
         $resp = [
             'code' => $code,
             'message' => $message,
             'data' => $data
         ];
-        return json_encode($resp, JSON_FORCE_OBJECT);
+        return json_encode($resp, $flag);
     }
 
     /**
@@ -135,7 +136,11 @@ class Resp {
      * @return string 参数错误的JSON
      */
     public function success($data) {
-        return self::generate(self::SUCCESS, self::MESSAGE[self::SUCCESS], $data);
+        if ($data == []) {
+            return self::generate(self::SUCCESS, self::MESSAGE[self::SUCCESS], $data);
+        } else {
+            return self::generate(self::SUCCESS, self::MESSAGE[self::SUCCESS], $data, null);
+        }
     }
 
     /**
