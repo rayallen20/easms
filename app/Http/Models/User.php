@@ -104,6 +104,7 @@ class User extends Model{
     public function create($user) {
         $this->account = $user->account;
         $this->password = $user->password;
+        $this->username = $user->username;
         $this->email = $user->email;
         $this->mobile = $user->mobile;
         $this->role_id = $user->role->id;
