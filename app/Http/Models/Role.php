@@ -33,4 +33,15 @@ class Role extends Model {
      * @var string $dateFormat 时间戳格式
      */
     protected $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id
+     * @return Role $role
+     */
+    public function findById($id) {
+        $role = $this->where('id', $id)->first();
+        return $role;
+    }
 }

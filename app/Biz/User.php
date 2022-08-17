@@ -36,7 +36,7 @@ class User {
     public $mobile;
 
     /**
-     * @var string $role 用户角色名称
+     * @var Role $role 用户角色名称
     */
     public $role;
 
@@ -64,7 +64,7 @@ class User {
         $resp = new Resp();
         $password = md5($password);
         $model = new \App\Http\Models\User();
-        $userOrm = $model->findByAccount($account, $password);
+        $userOrm = $model->findByAccountAndPassword($account, $password);
         $code = self::check($userOrm, $password, $code, $resp);
         if ($code != 0) {
             return $code;
@@ -157,7 +157,9 @@ class User {
         $this->username = $model->username;
         $this->email = $model->email;
         $this->mobile = $model->mobile;
-        $this->role = $model->role->name;
+        $this->role = new Role();
+        $this->role->id = $model->role->id;
+        $this->role->name = $model->role->name;
     }
 
     /**
@@ -165,7 +167,7 @@ class User {
      * @access public
      * @author Roach<18410269837@163.com>
      * @param string $jwt jwt值
-     * @return int $code
+     * @return int $code 错误码 若操作无错误则返回0
     */
     public function logout($jwt) {
         $code = 0;
@@ -190,5 +192,85 @@ class User {
         // step2. 根据jwt的解析结果查询用户信息 end
         $this->fill($userOrm);
         return $code;
+    }
+
+    /**
+     * 本方法用于根据jwt进行鉴权
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $jwt jwt值
+     * @return int $code 错误码 若鉴权无错误则返回0
+    */
+    public function authenticate($jwt) {
+        $code = 0;
+        // step1. 解析jwt start
+        $this->jwt = new Jwt();
+        $this->jwt->token = $jwt;
+        $claims = $this->jwt->parse();
+        if ($claims == null) {
+            $code = Resp::PARSE_JWT_FAILED;
+            return $code;
+        }
+        // step1. 解析jwt end
+
+        // step2. 根据jwt的解析结果查询用户信息 start
+        $userModel = new \App\Http\Models\User();
+        $userOrm = $userModel->findById($claims['id']);
+        if ($userOrm == null) {
+            $code = Resp::JWT_INVALID;
+            return $code;
+        }
+        // step2. 根据jwt的解析结果查询用户信息 end
+        $this->fill($userOrm);
+        return $code;
+    }
+
+    /**
+     * 本方法用于创建用户
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param User $target 待创建用户
+     * @return int $code 操作错误码
+    */
+    public function create(User $target) {
+        $code = 0;
+
+        // 检测同名账号是否存在
+        if ($this->existSameAccount($target->account)) {
+            $code = Resp::ACCOUNT_EXISTED;
+            return $code;
+        }
+
+        // 检测角色是否存在
+        if (!$target->role->exist()) {
+            $code = Resp::ROLE_NOT_EXIST;
+            return $code;
+        }
+
+        // 落盘保存
+        $target->password = md5($target->password);
+        $model = new \App\Http\Models\User();
+        $result = $model->create($target);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于根据账号检测用户是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $account 账号
+     * @return bool true表示存在 false表示不存在
+    */
+    private function existSameAccount(string $account) {
+        $model = new \App\Http\Models\User();
+        $userOrm = $model->findByAccount($account);
+        if ($userOrm == null) {
+            return false;
+        }
+        return true;
     }
 }

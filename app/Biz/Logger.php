@@ -22,6 +22,7 @@ class Logger {
     const OPERATIONS = [
         'login' => '登录',
         'logout' => '注销',
+        'createUser' => '创建系统用户',
     ];
 
     /**
@@ -91,6 +92,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['user'];
         $this->operateType = self::OPERATIONS['logout'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录注销操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logCreateUser(){
+        $code = 0;
+        $this->module = self::MODULES['user'];
+        $this->operateType = self::OPERATIONS['createUser'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

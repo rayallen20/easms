@@ -37,13 +37,31 @@ class Resp {
     */
     const JWT_INVALID = 10006;
 
+    /**
+     * @const int PERMISSION_DENY 本状态码表示用户无权限进行当前操作
+    */
+    const PERMISSION_DENY = 10007;
+
+    /**
+     * @const int ACCOUNT_EXISTED 本状态码表示待创建用户的账号已存在
+    */
+    const ACCOUNT_EXISTED = 10008;
+
+    /**
+     * @const int ROLE_NOT_EXIST 本状态码表示角色不存在
+     */
+    const ROLE_NOT_EXIST = 10009;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
         self::INCORRECT_PASSWORD => '密码不正确',
         self::SAVE_DATABASE_FAILED => '数据库写入错误',
         self::PARSE_JWT_FAILED => '解析token失败',
-        self::JWT_INVALID => 'token无效'
+        self::JWT_INVALID => 'token无效',
+        self::PERMISSION_DENY => '用户无权限执行该操作',
+        self::ACCOUNT_EXISTED => '存在账号名重复的用户,请更改账号内容',
+        self::ROLE_NOT_EXIST => '角色信息不存在',
     ];
 
     /**
@@ -140,6 +158,39 @@ class Resp {
      */
     public function jwtInvalid($data) {
         return self::generate(self::JWT_INVALID, self::MESSAGE[self::JWT_INVALID], $data);
+    }
+
+    /**
+     * 本方法用于生成当用户无权限执行当前操作时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function permissionDeny($data) {
+        return self::generate(self::PERMISSION_DENY, self::MESSAGE[self::PERMISSION_DENY], $data);
+    }
+
+    /**
+     * 本方法用于生成当账号已存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function accountExisted($data) {
+        return self::generate(self::ACCOUNT_EXISTED, self::MESSAGE[self::ACCOUNT_EXISTED], $data);
+    }
+
+    /**
+     * 本方法用于生成当角色信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function roleNotExist($data) {
+        return self::generate(self::ROLE_NOT_EXIST, self::MESSAGE[self::ROLE_NOT_EXIST], $data);
     }
 }
 

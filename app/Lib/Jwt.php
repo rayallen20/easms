@@ -20,6 +20,11 @@ class Jwt {
     public $secret = '12345678901234567890123456789012';
 
     /**
+     * @var bool $flag 用于解析时判断jwt格式是否正确的flag变量
+    */
+    private $flag;
+
+    /**
      * 本方法用于根据给定信息生成JWT中的payload部分
      * @access public
      * @author Roach<18410269837@163.com>
@@ -44,10 +49,15 @@ class Jwt {
         $parser = new Parser($signer, $validator);
         try {
             $claims = $parser->parse($this->token);
-        } catch (InvalidSignatureException $e) {
-            $claims = null;
-        } finally {
+            $this->flag = true;
             return $claims;
+        } catch (InvalidSignatureException $e) {
+            $this->flag = true;
+        } finally {
+            if (!$this->flag) {
+                return null;
+            }
         }
+        return null;
     }
 }
