@@ -19,3 +19,4 @@ Route::post('v1/user/login', 'v1\UserController@login');
 Route::post('v1/user/logout', 'v1\UserController@logout');
 Route::post('v1/user/create', 'v1\UserController@create');
 Route::post('v1/user/list', 'v1\UserController@list');
+Route::post('v1/user/update', 'v1\UserController@update');

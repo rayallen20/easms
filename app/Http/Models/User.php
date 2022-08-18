@@ -155,4 +155,23 @@ class User extends Model{
     public function countNormalUser() {
         return $this->where('status', self::STATUS['normal'])->count();
     }
+
+    /**
+     * 本方法用于更新1条用户信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id user表id字段值
+     * @param string $username user表username字段值
+     * @param string $email user表email字段值
+     * @param string $mobile user表mobile字段值
+     * @return bool 更新结果
+    */
+    public function updateUser($id, $username, $email, $mobile) {
+        $arr = [
+            'username' => $username,
+            'email' => $email,
+            'mobile' => $mobile
+        ];
+        return $this->where('id', $id)->update($arr);
+    }
 }

@@ -23,6 +23,7 @@ class Logger {
         'login' => '登录',
         'logout' => '注销',
         'createUser' => '创建系统用户',
+        'updateUser' => '更新用户信息',
     ];
 
     /**
@@ -103,7 +104,7 @@ class Logger {
     }
 
     /**
-     * 本方法用于记录注销操作的日志信息
+     * 本方法用于记录创建用户操作的日志信息
      * @access public
      * @author Roach<18410269837@163.com>
      * @return int $code
@@ -112,6 +113,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['user'];
         $this->operateType = self::OPERATIONS['createUser'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录更新用户信息操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logUpdateUser(){
+        $code = 0;
+        $this->module = self::MODULES['user'];
+        $this->operateType = self::OPERATIONS['updateUser'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

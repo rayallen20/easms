@@ -52,6 +52,11 @@ class Resp {
      */
     const ROLE_NOT_EXIST = 10009;
 
+    /**
+     * @const int ONLY_UPDATE_SELF_INFO 本状态码表示在更新用户信息时 用户的id与jwt中保存的id信息不符
+    */
+    const ONLY_UPDATE_SELF_INFO = 10010;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -62,6 +67,7 @@ class Resp {
         self::PERMISSION_DENY => '用户无权限执行该操作',
         self::ACCOUNT_EXISTED => '存在账号名重复的用户,请更改账号内容',
         self::ROLE_NOT_EXIST => '角色信息不存在',
+        self::ONLY_UPDATE_SELF_INFO => '传入的id与jwt中的信息不符',
     ];
 
     /**
@@ -196,6 +202,17 @@ class Resp {
      */
     public function roleNotExist($data) {
         return self::generate(self::ROLE_NOT_EXIST, self::MESSAGE[self::ROLE_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在更新用户信息操作中 当用户的id与jwt中保存的id信息不符时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function onlyUpdateSelf($data) {
+        return self::generate(self::ONLY_UPDATE_SELF_INFO, self::MESSAGE[self::ONLY_UPDATE_SELF_INFO], $data);
     }
 }
 

@@ -320,31 +320,10 @@ class UserController extends Controller {
             return $json;
         }
 
-        // 校验密码是否含有大写字母
-        $containLarge = $lib->containLarge($params['password']);
-        if (!$containLarge) {
-            $json = $resp->paramInvalid('密码内容不包含大写字母', []);
-            return $json;
-        }
-
-        // 校验密码是否包含小写字母
-        $containSmall = $lib->containSmall($params['password']);
-        if (!$containSmall) {
-            $json = $resp->paramInvalid('密码内容不包含小写字母', []);
-            return $json;
-        }
-
-        // 校验密码是否包含特殊字符
-        $containSpecial = $lib->containSpecialChar($params['password']);
-        if (!$containSpecial) {
-            $json = $resp->paramInvalid('密码内容不包含特殊字符', []);
-            return $json;
-        }
-
-        // 校验密码是否包含数字
-        $containNumber = $lib->containNumber($params['password']);
-        if(!$containNumber){
-            $json = $resp->paramInvalid('密码内容不包含数字', []);
+        // 校验密码是否合规
+        $isPassword = $lib->isPassword($params['password']);
+        if (!$isPassword['flag']) {
+            $json = $resp->paramInvalid($isPassword['reason'], []);
             return $json;
         }
 
@@ -444,7 +423,6 @@ class UserController extends Controller {
                 $user->mobile = '';
             }
 
-
             if ($user->lastLoginTime == null) {
                 $user->lastLoginTime = '';
             }
@@ -463,5 +441,150 @@ class UserController extends Controller {
 
         $json = $resp->success($data);
         return $json;
+    }
+
+    /**
+     * 本方法用于修改用户信息(除账号和密码)
+     * 账号一经创建不可修改 密码单独修改
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * username string 用户名
+     * email string 电子邮箱
+     * mobile string 手机号
+     * @return string $json 返回至前端的JSON
+    */
+    public function update(Request $request) {
+        // step1. 接受参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $id = $request->input('user.id');
+        $username = $request->input('user.username');
+        $email = $request->input('user.email');
+        $mobile = $request->input('user.mobile');
+
+        $params = [
+            'jwt' => $jwt,
+            'id' => $id,
+            'username' => $username,
+            'email' => $email,
+            'mobile' => $mobile
+        ];
+
+        $json = self::checkUpdateParam($params);
+        if ($json != null) {
+            return $json;
+        }
+        // step1. 接受参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $resp = new Resp();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        // 本操作中若传入的id和jwt中的id不符 则同样判定为没有权限
+        if ($userBiz->id != $id) {
+            $json = $resp->onlyUpdateSelf([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 修改信息 start
+        $code = $userBiz->update($id, $username, $email, $mobile);
+        if ($code == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 修改信息 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logUpdateUser();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+
+        // step4. 封装返回值结构 start
+        $data = [
+            'users' => [
+                'id' => $userBiz->id,
+                'account' => $userBiz->account,
+                'username' => $userBiz->username,
+                'email' => $userBiz->email,
+                'mobile' => $userBiz->mobile,
+                'role' => $userBiz->role->name,
+                'lastLoginTime' => $userBiz->lastLoginTime,
+            ],
+        ];
+        // step4. 封装返回值结构 end
+        $json = $resp->success($data);
+        return $json;
+    }
+
+    /**
+     * 本方法用于为update方法校验参数
+     * 规则:
+     * id: 必须为大于0的整数
+     * email: 必须包含@和.
+     * mobile: 必须为1开头的11位数字
+     * @access private
+     * @author Roach<18410269837@163.com>
+     * @param array $params 参数列表
+     * @return string|null 参数合规则返回空 否则返回一个标识参数不合规原因的JSON
+     */
+    private function checkUpdateParam($params) {
+        $rules = [
+            'jwt' => 'required|string',
+            'id' => 'required|int|min:1',
+            'username' => 'required|string',
+            'email' => 'required|string',
+            'mobile' => 'required|string',
+        ];
+
+        $exceptionMessages = [
+            'username.required' => '用户名不能为空',
+            'username.string' => '用户名内容必须为字符串',
+            'email.required' => '邮箱不能为空',
+            'email.string' => '邮箱内容不符合邮箱格式',
+            'mobile.required' => '电话不能为空',
+            'mobile.string' => '电话内容必须为字符串',
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串'
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+
+        // 校验email是否合规
+        $isEmail = $lib->isEmail($params['email']);
+        if (!$isEmail) {
+            $json = $resp->paramInvalid('邮箱内容不符合邮箱格式', []);
+            return $json;
+        }
+
+        // 校验mobile是否合规
+        $isMobile = $lib->isMobile($params['mobile']);
+        if (!$isMobile) {
+            $json = $resp->paramInvalid('手机号内容不符合手机号格式', []);
+            return $json;
+        }
+
+        return null;
     }
 }

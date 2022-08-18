@@ -311,4 +311,30 @@ class User {
         $result['pagination'] = $pagination;
         return $result;
     }
+
+    /**
+     * 本方法用于更新用户信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 被更新用户的id
+     * @param string $username 更新后的用户名
+     * @param string $email 更新后的邮箱
+     * @param string $mobile 更新后的手机号
+     * @return int $code 表示更新结果的错误码 成功则返回0
+    */
+    public function update($id, $username, $email, $mobile) {
+        $code = 0;
+
+        $model = new \App\Http\Models\User();
+        $result = $model->updateUser($id, $username, $email, $mobile);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+
+        $this->username = $username;
+        $this->email = $email;
+        $this->mobile = $mobile;
+        return $code;
+    }
 }

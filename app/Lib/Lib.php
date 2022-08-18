@@ -131,4 +131,50 @@ class Lib {
 
         return false;
     }
+
+    /**
+     * 本方法用于校验给定字符串是否符合密码规则
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $str 待校验的字符串
+     * @return array $result 校验结果数组
+     * $result['flag']:是否符合密码规则
+     * $result['reason']:不符合密码规则的原因
+    */
+    public function isPassword($str) {
+        $result = [
+            'flag' => true,
+            'reason' => '',
+        ];
+
+        // 校验密码是否含有大写字母
+        if (!$this->containLarge($str)) {
+            $result['flag'] = false;
+            $result['reason'] = '密码内容不包含大写字母';
+            return $result;
+        }
+
+        // 校验密码是否含有小写字母
+        if (!$this->containSmall($str)) {
+            $result['flag'] = false;
+            $result['reason'] = '密码内容不包含小写字母';
+            return $result;
+        }
+
+        // 校验密码是否含有特殊字符
+        if (!$this->containSpecialChar($str)) {
+            $result['flag'] = false;
+            $result['reason'] = '密码内容不包含特殊字符';
+            return $result;
+        }
+
+        // 校验密码是否含有数字
+        if (!$this->containNumber($str)) {
+            $result['flag'] = false;
+            $result['reason'] = '密码内容不包含数字';
+            return $result;
+        }
+
+        return $result;
+    }
 }
