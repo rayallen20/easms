@@ -499,7 +499,7 @@ class UserController extends Controller {
         // step2. 鉴权 end
 
         // step3. 修改信息 start
-        $code = $userBiz->update($id, $username, $email, $mobile);
+        $code = $userBiz->update($username, $email, $mobile);
         if ($code == Resp::SAVE_DATABASE_FAILED) {
             $json = $resp->DBFailed([]);
             return $json;
@@ -560,7 +560,10 @@ class UserController extends Controller {
             'mobile.required' => '电话不能为空',
             'mobile.string' => '电话内容必须为字符串',
             'jwt.required' => 'jwt不能为空',
-            'jwt.string' => 'jwt内容必须为字符串'
+            'jwt.string' => 'jwt内容必须为字符串',
+            'id.required' => '用户id不能为空',
+            'id.int' => '用户id必须为整型',
+            'id.min' => 'id字段值不能小于1'
         ];
 
         $lib = new Lib();
@@ -585,6 +588,157 @@ class UserController extends Controller {
             return $json;
         }
 
+        return null;
+    }
+
+    /**
+     * 本方法用于修改用户密码
+     * 账号一经创建不可修改 密码单独修改
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * jwt string 用户jwt
+     * id int 用户id
+     * oldPassword string 原密码
+     * newPassword string 新密码
+     * newPasswordRepeat string 重复新密码
+     * @return string $json 返回至前端的JSON
+    */
+    public function updatePassword(Request $request) {
+        // step1. 接受参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $id = $request->input('user.id');
+        $oldPassword = $request->input('user.oldPassword');
+        $newPassword = $request->input('user.newPassword');
+        $newPasswordRepeat = $request->input('user.newPasswordRepeat');
+
+        $params = [
+            'jwt' => $jwt,
+            'id' => $id,
+            'oldPassword' => $oldPassword,
+            'newPassword' => $newPassword,
+            'newPasswordRepeat' => $newPasswordRepeat,
+        ];
+        $json = self::checkUpdatePasswordParam($params);
+        if ($json != null) {
+            return $json;
+        }
+        // step1. 接受参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $resp = new Resp();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($userBiz->id != $id) {
+            $json = $resp->onlyUpdateSelf([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $code = $userBiz->updatePassword($oldPassword, $newPassword);
+        if ($code == Resp::INCORRECT_PASSWORD) {
+            $json = $resp->incorrectPassword([]);
+            return $json;
+        }
+
+        if ($code == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logUpdatePassword();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+
+        $json = $resp->success([]);
+        return $json;
+    }
+
+    /**
+     * 本方法用于为updatePassword方法校验参数
+     * @access private
+     * @author Roach<18410269837@163.com>
+     * @param array $params 参数列表
+     * 规则:
+     * jwt: 必须为字符串
+     * id: 必须为大于0的整数
+     * oldPassword: 必须符合密码规则(8-16位的、包含大写字母、小写字母、数字的字符串)
+     * newPassword: 必须符合密码规则(8-16位的、包含大写字母、小写字母、数字的字符串)
+     * newPasswordRepeat: 必须符合密码规则(8-16位的、包含大写字母、小写字母、数字的字符串)
+     * @return string|null 参数合规则返回空 否则返回一个标识参数不合规原因的JSON
+    */
+    private function checkUpdatePasswordParam($params) {
+        $rules = [
+            'jwt' => 'required|string',
+            'id' => 'required|int|min:1',
+            'oldPassword' => 'required|string|min:8|max:16',
+            'newPassword' => 'required|string|min:8|max:16',
+            'newPasswordRepeat' => 'required|string|min:8|max:16',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'id.required' => '用户id不能为空',
+            'id.int' => '用户id必须为整型',
+            'id.min' => 'id字段值不能小于1',
+            'oldPassword.required' => '原密码不能为空',
+            'oldPassword.string' => '原密码内容必须为字符串',
+            'oldPassword.min' => '原密码长度不得低于8位',
+            'oldPassword.max' => '原密码长度不得高于16位',
+            'newPassword.required' => '新密码不能为空',
+            'newPassword.string' => '新密码内容必须为字符串',
+            'newPassword.min' => '新密码长度不得低于8位',
+            'newPassword.max' => '新密码长度不得高于16位',
+            'newPasswordRepeat.required' => '重复新密码不能为空',
+            'newPasswordRepeat.string' => '重复新密码内容必须为字符串',
+            'newPasswordRepeat.min' => '重复新密码长度不得低于8位',
+            'newPasswordRepeat.max' => '重复新密码长度不得高于16位',
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+
+        $isPassword = $lib->isPassword($params['oldPassword']);
+        if (!$isPassword['flag']) {
+            $json = $resp->paramInvalid('原密码的'.$isPassword['reason'], []);
+            return $json;
+        }
+
+        $isPassword = $lib->isPassword($params['newPassword']);
+        if (!$isPassword['flag']) {
+            $json = $resp->paramInvalid('新密码的'.$isPassword['reason'], []);
+            return $json;
+        }
+
+        // 校验2次输入的密码是否一致
+        if ($params['newPassword'] != $params['newPasswordRepeat']) {
+            $json = $resp->paramInvalid('两次输入的新密码不一致', []);
+            return $json;
+        }
         return null;
     }
 }

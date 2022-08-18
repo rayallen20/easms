@@ -24,6 +24,7 @@ class Logger {
         'logout' => '注销',
         'createUser' => '创建系统用户',
         'updateUser' => '更新用户信息',
+        'updatePassword' => '修改密码',
     ];
 
     /**
@@ -133,6 +134,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['user'];
         $this->operateType = self::OPERATIONS['updateUser'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录更新用户密码操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logUpdatePassword(){
+        $code = 0;
+        $this->module = self::MODULES['user'];
+        $this->operateType = self::OPERATIONS['updatePassword'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

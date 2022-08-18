@@ -174,4 +174,17 @@ class User extends Model{
         ];
         return $this->where('id', $id)->update($arr);
     }
+
+    /**
+     * 本方法用于更新1条用户信息的password字段值
+     * @access public
+     * @author Roach<18410269837@163.com>
+     *
+    */
+    public function updatePassword($id, $password) {
+        $arr = [
+            'password' => $password
+        ];
+        return $this->where('id', $id)->update($arr);
+    }
 }

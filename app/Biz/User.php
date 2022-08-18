@@ -316,17 +316,16 @@ class User {
      * 本方法用于更新用户信息
      * @access public
      * @author Roach<18410269837@163.com>
-     * @param int $id 被更新用户的id
      * @param string $username 更新后的用户名
      * @param string $email 更新后的邮箱
      * @param string $mobile 更新后的手机号
      * @return int $code 表示更新结果的错误码 成功则返回0
     */
-    public function update($id, $username, $email, $mobile) {
+    public function update($username, $email, $mobile) {
         $code = 0;
 
         $model = new \App\Http\Models\User();
-        $result = $model->updateUser($id, $username, $email, $mobile);
+        $result = $model->updateUser($this->id, $username, $email, $mobile);
         if (!$result) {
             $code = Resp::SAVE_DATABASE_FAILED;
             return $code;
@@ -335,6 +334,34 @@ class User {
         $this->username = $username;
         $this->email = $email;
         $this->mobile = $mobile;
+        return $code;
+    }
+
+    /**
+     * 本方法用于
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $oldPassword 原密码
+     * @param string $newPassword 新密码
+     * @return int $code 错误码 若操作无错误则返回0
+    */
+    public function updatePassword($oldPassword, $newPassword) {
+        $code = 0;
+        $oldPassword = md5($oldPassword);
+        if ($oldPassword != $this->password) {
+            $code = Resp::INCORRECT_PASSWORD;
+            return $code;
+        }
+
+        $newPassword = md5($newPassword);
+        $model = new \App\Http\Models\User();
+        $result = $model->updatePassword($this->id, $newPassword);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+
+        $this->password = $newPassword;
         return $code;
     }
 }
