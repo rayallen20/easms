@@ -25,6 +25,7 @@ class Logger {
         'createUser' => '创建系统用户',
         'updateUser' => '更新用户信息',
         'updatePassword' => '修改密码',
+        'deleteUser' => '删除用户'
     ];
 
     /**
@@ -154,6 +155,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['user'];
         $this->operateType = self::OPERATIONS['updatePassword'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录删除用户操作操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logDeleteUser(){
+        $code = 0;
+        $this->module = self::MODULES['user'];
+        $this->operateType = self::OPERATIONS['deleteUser'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

@@ -53,18 +53,6 @@ class User extends Model{
     /**
      * @access public
      * @author Roach<18410269837@163.com>
-     * @param string $account 账户名
-     * @param string $password 密码
-     * @return User $user
-    */
-    public function findByAccountAndPassword($account, $password) {
-        $user = $this->where('account', $account)->where('password', $password)->first();
-        return $user;
-    }
-
-    /**
-     * @access public
-     * @author Roach<18410269837@163.com>
      * @param string $lastLoginTime 最后登录时间
      * @return bool 更新结果
     */
@@ -179,12 +167,25 @@ class User extends Model{
      * 本方法用于更新1条用户信息的password字段值
      * @access public
      * @author Roach<18410269837@163.com>
-     *
+     * @param int $id user表id字段值
+     * @param string $password user表password字段值
+     * @return bool 更新结果
     */
     public function updatePassword($id, $password) {
         $arr = [
             'password' => $password
         ];
         return $this->where('id', $id)->update($arr);
+    }
+
+    /**
+     * 本方法用于更新1条用户信息的status字段值
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return bool 更新结果
+     */
+    public function deleteUser() {
+        $this->status = self::STATUS['delete'];
+        return $this->save();
     }
 }

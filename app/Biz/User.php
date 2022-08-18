@@ -65,25 +65,36 @@ class User {
         $resp = new Resp();
         $password = md5($password);
         $model = new \App\Http\Models\User();
-        $userOrm = $model->findByAccountAndPassword($account, $password);
-        $code = self::check($userOrm, $password, $code, $resp);
+        $userOrm = $model->findByAccount($account);
+        if ($userOrm == null) {
+            $code =  $resp::ACCOUNT_NOT_EXIST;
+            return $code;
+        }
+        $code = self::check($userOrm, $password);
         if ($code != 0) {
             return $code;
         }
         // step1. 校验参数名密码是否正确 end
 
-        // step2. 生成JWT start
+        // step2. 校验用户状态 start
+        if ($userOrm->status != \App\Http\Models\User::STATUS['normal']) {
+            $code = Resp::USER_HAS_BEEN_DELETED;
+            return $code;
+        }
+        // step2. 校验用户状态 end
+
+        // step3. 生成JWT start
         $this->fill($userOrm);
         $this->generateJwt($userOrm);
-        // step2. 生成JWT end
+        // step3. 生成JWT end
 
-        // step3. 更新最后登录时间 start
+        // step4. 更新最后登录时间 start
         $lastLoginDate = date('Y-m-d H:i:s');
         $code = $this->updateLastLoginTime($userOrm, $lastLoginDate, $code, $resp);
         if ($code != 0) {
             return $code;
         }
-        // step3. 更新最后登录时间 end
+        // step4. 更新最后登录时间 end
         $this->lastLoginTime = $lastLoginDate;
         return $code;
     }
@@ -94,17 +105,13 @@ class User {
      * @author Roach<18410269837@163.com>
      * @param \App\Http\Models\User $userOrm user表根据account字段值的查询结果ORM
      * @param string $password 用户填写的密码经md5加密后的值
-     * @param int $code 错误码值
-     * @param Resp $resp 返回JSON类 在本方法中用作code字典
      * @return int $code 错误码值
     */
-    private function check($userOrm, $password, $code, $resp) {
-        if ($userOrm == null) {
-            return $resp::ACCOUNT_NOT_EXIST;
-        }
-
+    private function check($userOrm, $password) {
+        $code = 0;
         if ($password != $userOrm->password) {
-            return $resp::INCORRECT_PASSWORD;
+            $code = Resp::INCORRECT_PASSWORD;
+            return $code;
 
         }
         return $code;
@@ -191,6 +198,11 @@ class User {
             $code = Resp::JWT_INVALID;
             return $code;
         }
+
+        if ($userOrm->status != \App\Http\Models\User::STATUS['normal']) {
+            $code = Resp::USER_HAS_BEEN_DELETED;
+            return $code;
+        }
         // step2. 根据jwt的解析结果查询用户信息 end
         $this->fill($userOrm);
         return $code;
@@ -220,6 +232,11 @@ class User {
         $userOrm = $userModel->findById($claims['id']);
         if ($userOrm == null) {
             $code = Resp::JWT_INVALID;
+            return $code;
+        }
+
+        if ($userOrm->status != \App\Http\Models\User::STATUS['normal']) {
+            $code = Resp::USER_HAS_BEEN_DELETED;
             return $code;
         }
         // step2. 根据jwt的解析结果查询用户信息 end
@@ -338,7 +355,7 @@ class User {
     }
 
     /**
-     * 本方法用于
+     * 本方法用于修改用户密码
      * @access public
      * @author Roach<18410269837@163.com>
      * @param string $oldPassword 原密码
@@ -362,6 +379,36 @@ class User {
         }
 
         $this->password = $newPassword;
+        return $code;
+    }
+
+    /**
+     * 本方法用于删除用户
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $targetId 待删除用户的用户id
+     * @return int $code 错误码 若操作无错误则返回0
+    */
+    public function delete($targetId) {
+        $code = 0;
+        if ($targetId == $this->id) {
+            $code = Resp::CAN_NOT_DELETE_SELF;
+            return $code;
+        }
+
+        $model = new \App\Http\Models\User();
+        $userOrm = $model->findById($targetId);
+        if($userOrm == null) {
+            $code = Resp::TARGET_USER_NOT_EXIST;
+            return $code;
+        }
+
+        $result = $userOrm->deleteUser();
+
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
         return $code;
     }
 }

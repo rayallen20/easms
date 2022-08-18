@@ -57,6 +57,21 @@ class Resp {
     */
     const ONLY_UPDATE_SELF_INFO = 10010;
 
+    /**
+     * @const int CAN_NOT_DELETE_SELF 本状态码表示在删除用户时 当前用户不得删除自己
+    */
+    const CAN_NOT_DELETE_SELF = 10011;
+
+    /**
+     * @const int USER_HAS_BEEN_DELETED 本状态码表示用户已经被删除
+    */
+    const USER_HAS_BEEN_DELETED = 10012;
+
+    /**
+     * @const int TARGET_USER_NOT_EXIST 本状态码表示操作的目标用户不存在
+    */
+    const TARGET_USER_NOT_EXIST = 10013;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -68,6 +83,9 @@ class Resp {
         self::ACCOUNT_EXISTED => '存在账号名重复的用户,请更改账号内容',
         self::ROLE_NOT_EXIST => '角色信息不存在',
         self::ONLY_UPDATE_SELF_INFO => '传入的id与jwt中的信息不符',
+        self::CAN_NOT_DELETE_SELF => '当前用户不得删除自身',
+        self::USER_HAS_BEEN_DELETED => '用户已经被删除,无法执行当前操作',
+        self::TARGET_USER_NOT_EXIST => '操作的目标用户不存在',
     ];
 
     /**
@@ -213,6 +231,39 @@ class Resp {
      */
     public function onlyUpdateSelf($data) {
         return self::generate(self::ONLY_UPDATE_SELF_INFO, self::MESSAGE[self::ONLY_UPDATE_SELF_INFO], $data);
+    }
+
+    /**
+     * 本方法用于生成在删除用户时 当前用户删除的目标对象为自身时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function canNotDeleteSelf($data) {
+        return self::generate(self::CAN_NOT_DELETE_SELF, self::MESSAGE[self::CAN_NOT_DELETE_SELF], $data);
+    }
+
+    /**
+     * 本方法用于生成在删除用户时 当前用户删除的目标对象为自身时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function userHasBeenDeleted($data) {
+        return self::generate(self::USER_HAS_BEEN_DELETED, self::MESSAGE[self::USER_HAS_BEEN_DELETED], $data);
+    }
+
+    /**
+     * 本方法用于生成在操作的目标用户不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function targetUserNotExist($data) {
+        return self::generate(self::TARGET_USER_NOT_EXIST, self::MESSAGE[self::TARGET_USER_NOT_EXIST], $data);
     }
 }
 
