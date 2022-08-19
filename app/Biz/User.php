@@ -411,4 +411,37 @@ class User {
         }
         return $code;
     }
+
+    /**
+     * 本方法用于查看单个用户
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $targetId 被查看的用户id
+     * @return array $result 本数组共3项内容:
+     * User $result['user']:用户信息
+     * int $result['code']:错误码
+    */
+    public function show($targetId) {
+        $result = [
+            'user' => null,
+            'code' => 0
+        ];
+
+        $model = new \App\Http\Models\User();
+        $userOrm = $model->findById($targetId);
+        if ($userOrm == null) {
+            $result['code'] = Resp::TARGET_USER_NOT_EXIST;
+            return $result;
+        }
+
+        if ($userOrm->status == \App\Http\Models\User::STATUS['delete']) {
+            $result['code'] = Resp::USER_HAS_BEEN_DELETED;
+            return $result;
+        }
+
+        $target = new User();
+        $target->fill($userOrm);
+        $result['user'] = $target;
+        return $result;
+    }
 }

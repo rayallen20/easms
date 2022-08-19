@@ -22,3 +22,4 @@ Route::post('v1/user/list', 'v1\UserController@list');
 Route::post('v1/user/update', 'v1\UserController@update');
 Route::post('v1/user/updatePassword', 'v1\UserController@updatePassword');
 Route::post('v1/user/delete', 'v1\UserController@delete');
+Route::post('v1/user/show', 'v1\UserController@show');

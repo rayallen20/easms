@@ -541,8 +541,20 @@ class UserController extends Controller {
         // step4. 记录日志 end
 
         // step4. 封装返回值结构 start
+        if ($userBiz->email == null) {
+            $userBiz->email = '';
+        }
+
+        if ($userBiz->mobile == null) {
+            $userBiz->mobile = '';
+        }
+
+        if ($userBiz->lastLoginTime == null) {
+            $userBiz->lastLoginTime = '';
+        }
+
         $data = [
-            'users' => [
+            'user' => [
                 'id' => $userBiz->id,
                 'account' => $userBiz->account,
                 'username' => $userBiz->username,
@@ -866,6 +878,115 @@ class UserController extends Controller {
         // step4. 记录日志 end
 
         $json = $resp->success([]);
+        return $json;
+    }
+
+    /**
+     * 本方法用于根据id显示单条用户信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * user.jwt string 操作者用户jwt
+     * target.id int 被查看的用户id
+    */
+    public function show(Request $request) {
+        // step1. 接收参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $id = $request->input('target.id');
+
+        $params = [
+            'jwt' => $jwt,
+            'id' => $id
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+            'id' => 'required|int|min:1',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'id.required' => '用户id不能为空',
+            'id.int' => '用户id必须为整型',
+            'id.min' => 'id字段值不能小于1',
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接收参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        // 若既不是超管也不是本人 则无权限查看其他用户的信息
+        if ($userBiz->role->name != 'super_admin' && $userBiz->id != $id) {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $result = $userBiz->show($id);
+        if ($result['code'] == Resp::TARGET_USER_NOT_EXIST) {
+            $json = $resp->targetUserNotExist([]);
+            return $json;
+        }
+
+        if ($result['code'] == Resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 封装返回结构 start
+
+        if ($result['user']->email == null) {
+            $result['user']->email = '';
+        }
+
+        if ($result['user']->mobile == null) {
+            $result['user']->mobile = '';
+        }
+
+        if ($result['user']->lastLoginTime == null) {
+            $result['user']->lastLoginTime = '';
+        }
+
+        $data = [
+            'user' => [
+                'id' => $result['user']->id,
+                'account' => $result['user']->account,
+                'username' => $result['user']->username,
+                'email' => $result['user']->email,
+                'mobile' => $result['user']->mobile,
+                'role' => $result['user']->role->name,
+                'lastLoginTime' => $result['user']->lastLoginTime,
+            ],
+        ];
+        // step4. 封装返回结构 end
+        $json = $resp->success($data);
         return $json;
     }
 }
