@@ -25,3 +25,4 @@ Route::post('v1/user/delete', 'v1\UserController@delete');
 Route::post('v1/user/show', 'v1\UserController@show');
 Route::post('v1/department/create', 'v1\DepartmentController@create');
 Route::post('v1/department/list', 'v1\DepartmentController@list');
+Route::post('v1/department/update', 'v1\DepartmentController@update');

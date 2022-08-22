@@ -127,4 +127,38 @@ class Department {
         $this->updatedTime = explode('.', $model->updated_time)[0];
         // TODO: majorCollection
     }
+
+    /**
+     * 本方法用于更新院系信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 院系id
+     * @param string $name 更新后的院系名称
+     * @param string $principalName 更新后的院系负责人姓名
+     * @param string $principalMobile 更新后的院系负责人手机号
+     * @return int $code 表示更新结果的错误码 成功则返回0
+     */
+    public function update($id, $name, $principalName, $principalMobile) {
+        $code = 0;
+        $model = new \App\Http\Models\Department();
+        $departmentOrm = $model->findById($id);
+        if ($departmentOrm == null) {
+            $code = Resp::DEPARTMENT_NOT_EXIST;
+            return $code;
+        }
+
+        if ($departmentOrm->status == \App\Http\Models\Department::STATUS['delete']) {
+            $code = Resp::DEPARTMENT_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $result = $model->updateDepartment($departmentOrm, $name, $principalName, $principalMobile);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+
+        $this->fill($departmentOrm);
+        return $code;
+    }
 }

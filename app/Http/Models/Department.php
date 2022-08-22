@@ -109,4 +109,25 @@ class Department extends Model {
     public function countNormalDepartments() {
         return $this->where('status', self::STATUS['normal'])->count();
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于更新1条用户信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Department $orm 要更新的orm
+     * @param string $name department表的name字段值
+     * @param string $principalName department表的principal_name字段值
+     * @param string $principalMobile department表的principal_mobile字段值
+     * @return bool 更新结果
+     */
+    public function updateDepartment($orm, $name, $principalName, $principalMobile) {
+        $orm->name = $name;
+        $orm->principal_name = $principalName;
+        $orm->principal_mobile = $principalMobile;
+        return $orm->save();
+    }
 }
