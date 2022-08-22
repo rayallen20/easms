@@ -153,9 +153,7 @@ class User {
      * 本方法用于根据User表的ORM填充Biz层的User对象
      * @access public
      * @author Roach<18410269837@163.com>
-     * @param array $params 参数数组
-     * @param array $rules 校验规则数组
-     * @param array $messages 错误信息数组
+     * @param \App\Http\Models\User $model 用户信息ORM
      * @return void
     */
     public function fill($model) {

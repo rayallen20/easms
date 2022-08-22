@@ -1,6 +1,7 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Pagination;
 use App\Lib\Resp;
 
 class Department {
@@ -40,6 +41,16 @@ class Department {
     public $sort;
 
     /**
+     * @var string $createdTime 院系信息创建时间
+    */
+    public $createdTime;
+
+    /**
+     * @var string $updatedTime 院系修改时间
+    */
+    public $updatedTime;
+
+    /**
      * 本方法用于创建院系
      * @access public
      * @author Roach<18410269837@163.com>
@@ -60,5 +71,60 @@ class Department {
             return $code;
         }
         return $code;
+    }
+
+    /**
+     * 本方法用于列表展示院系信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $currentPage 当前页数
+     * @param int $itemPerPage 每页显示信息条数
+     * @return array $result 本数组共3项内容:
+     * array<User> $result['departments']:院系信息集合
+     * App\Lib\Pagination $result['pagination']:分页器对象
+     * int $result['code']:错误码
+     */
+    public function list($currentPage, $itemPerPage) {
+        $result = [
+            'departments' => [],
+            'pagination' => null,
+            'code' => 0
+        ];
+
+        $pagination = new Pagination($currentPage, $itemPerPage);
+        $offset = $pagination->calcOffset();
+
+        $model = new \App\Http\Models\Department();
+        $departmentCollection = $model->findNormalDepartments($offset, $itemPerPage);
+        for ($i = 0; $i <= count($departmentCollection) - 1; $i++) {
+            $departmentOrm = $departmentCollection[$i];
+            $department = new Department();
+            $department->fill($departmentOrm);
+            $result['departments'][$i] = $department;
+        }
+
+        $totalDepartmentNum = $model->countNormalDepartments();
+        $pagination->calcTotalPage($totalDepartmentNum);
+        $result['pagination'] = $pagination;
+        return $result;
+    }
+
+    /**
+     * 本方法用于根据User表的ORM填充Biz层的User对象
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param \App\Http\Models\Department $model 院系信息ORM
+     * @return void
+     */
+
+    public function fill($model) {
+        $this->id = $model->id;
+        $this->name = $model->name;
+        $this->principalName = $model->principal_name;
+        $this->principalMobile = $model->principal_mobile;
+        $this->sort = $model->sort;
+        $this->createdTime = explode('.', $model->created_time)[0];
+        $this->updatedTime = explode('.', $model->updated_time)[0];
+        // TODO: majorCollection
     }
 }

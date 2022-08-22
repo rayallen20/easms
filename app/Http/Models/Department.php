@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -80,5 +81,32 @@ class Department extends Model {
             return $maxId;
         }
         return $maxId;
+    }
+
+    /**
+     * 本方法用于分页查询状态正常的院系信息集合 结果集按sort字段值升序排序
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $offset 偏移量
+     * @param int $limit 每页信息数量
+     * @return Collection 查询到的结果集
+     */
+    public function findNormalDepartments($offset, $limit) {
+        $departments = $this->where('status', self::STATUS['normal'])
+            ->orderBy('sort', 'asc')
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+        return $departments;
+    }
+
+    /**
+     * 本方法用于计算状态正常的院系信息的总条数
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int 信息总条数
+     */
+    public function countNormalDepartments() {
+        return $this->where('status', self::STATUS['normal'])->count();
     }
 }
