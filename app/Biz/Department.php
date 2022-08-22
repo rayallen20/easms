@@ -161,4 +161,33 @@ class Department {
         $this->fill($departmentOrm);
         return $code;
     }
+
+    /**
+     * 本方法用于删除用户
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待删除院系的院系id
+     * @return int $code 错误码 若操作无错误则返回0
+     */
+    public function delete($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Department();
+        $departmentOrm = $model->findById($id);
+        if ($departmentOrm == null) {
+            $code = Resp::DEPARTMENT_NOT_EXIST;
+            return $code;
+        }
+
+        if ($departmentOrm->status == \App\Http\Models\Department::STATUS['delete']) {
+            $code = Resp::DEPARTMENT_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $result = $model->updateStatus($departmentOrm, \App\Http\Models\Department::STATUS['delete']);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
 }
