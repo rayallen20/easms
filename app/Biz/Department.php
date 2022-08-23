@@ -163,7 +163,7 @@ class Department {
     }
 
     /**
-     * 本方法用于删除用户
+     * 本方法用于删除院系
      * @access public
      * @author Roach<18410269837@163.com>
      * @param int $id 待删除院系的院系id

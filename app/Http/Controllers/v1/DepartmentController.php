@@ -393,7 +393,7 @@ class DepartmentController extends Controller {
     }
 
     /**
-     * 本方法用于删除系统用户
+     * 本方法用于删除院系
      * @access public
      * @author Roach<18410269837@163.com>
      * @param Request $request 请求组件
