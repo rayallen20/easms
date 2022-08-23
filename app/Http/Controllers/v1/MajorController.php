@@ -110,4 +110,119 @@ class MajorController extends Controller {
         $json = $resp->success([]);
         return $json;
     }
+
+    /**
+     * 本方法用于以列表形式查看指定院系下的专业信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * jwt
+     * id int 院系id
+     * currentPage int 当前页数
+     * itemPerPage int 每页显示信息条数
+     * @return string $json 返回的JSON
+     */
+    public function list(Request $request) {
+        // step1. 接收参数 验证规则 start
+        $jwt = $request->input('user.jwt');
+        $id = $request->input('department.id');
+        $currentPage = $request->input('pagination.currentPage');
+        $itemPerPage = $request->input('pagination.itemPerPage');
+
+        $params = [
+            'currentPage' => $currentPage,
+            'itemPerPage' => $itemPerPage,
+            'jwt' => $jwt,
+            'id' => $id,
+        ];
+
+        $rules = [
+            'currentPage' => 'required|int|min:1',
+            'itemPerPage' => 'required|int|min:1',
+            'jwt' => 'required|string',
+            'id' => 'required|int|min:1'
+        ];
+
+        $exceptionMessages = [
+            'currentPage.required' => '当前页数不能为空',
+            'currentPage.int' => '当前页数必须为整型',
+            'currentPage.min' => '当前页数不得小于1',
+            'itemPerPage.required' => '每页显示条目不能为空',
+            'itemPerPage.int' => '每页显示条目必须为整型',
+            'itemPerPage.min' => '每页显示条目不得小于1',
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'id.required' => '院系id不能为空',
+            'id.int' => '院系id必须为整型',
+            'id.min' => '院系id不得小于1',
+        ];
+
+        $resp = new Resp();
+
+        $lib = new Lib();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接收参数 验证规则 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $majorBiz = new Major();
+        $result = $majorBiz->list($id, $currentPage, $itemPerPage);
+        if ($result['code'] == Resp::DEPARTMENT_NOT_EXIST) {
+            $json = $resp->departmentNotExist([]);
+            return $json;
+        }
+
+        if ($result['code'] == Resp::DEPARTMENT_HAS_BEEN_DELETE) {
+            $json = $resp->departmentHasBeenDeleted([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 封装返回值结构 start
+        $data = [
+            'user' => [
+                'role' => $userBiz->role->name
+            ],
+            'pagination' => $result['pagination'],
+            'majors' => []
+        ];
+
+        for ($i = 0; $i <= count($result['majors']) - 1; $i++) {
+            $major = $result['majors'][$i];
+            $data['majors'][] = [
+                'id' => $major->id,
+                'department' => $major->department->name,
+                'name' => $major->name,
+                'createdTime' => $major->createdTime,
+                'updatedTime' => $major->updatedTime,
+            ];
+        }
+        // step4. 封装返回值结构 end
+
+        $json = $resp->success($data);
+        return $json;
+    }
 }

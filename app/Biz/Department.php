@@ -80,7 +80,7 @@ class Department {
      * @param int $currentPage 当前页数
      * @param int $itemPerPage 每页显示信息条数
      * @return array $result 本数组共3项内容:
-     * array<User> $result['departments']:院系信息集合
+     * array<Department> $result['departments']:院系信息集合
      * App\Lib\Pagination $result['pagination']:分页器对象
      * int $result['code']:错误码
      */
@@ -110,7 +110,7 @@ class Department {
     }
 
     /**
-     * 本方法用于根据User表的ORM填充Biz层的User对象
+     * 本方法用于根据Department表的ORM填充Biz层的Department对象
      * @access public
      * @author Roach<18410269837@163.com>
      * @param \App\Http\Models\Department $model 院系信息ORM

@@ -120,6 +120,7 @@ class DepartmentController extends Controller {
      * @author Roach<18410269837@163.com>
      * @param Request $request 请求组件
      * 实际参数为:
+     * jwt string 用户jwt
      * currentPage int 当前页数
      * itemPerPage int 每页显示信息条数
      * @return string $json 返回的JSON
