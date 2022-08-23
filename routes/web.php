@@ -29,3 +29,4 @@ Route::post('v1/department/update', 'v1\DepartmentController@update');
 Route::post('v1/department/delete', 'v1\DepartmentController@delete');
 Route::post('v1/major/create', 'v1\MajorController@create');
 Route::post('v1/major/list', 'v1\MajorController@list');
+Route::post('v1/major/update', 'v1\MajorController@update');

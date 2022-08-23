@@ -225,4 +225,123 @@ class MajorController extends Controller {
         $json = $resp->success($data);
         return $json;
     }
+
+    /**
+     * 本方法用于修改院系信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * user.jwt 操作者jwt
+     * major.id int 专业id
+     * major.name string 修改后的专业名称
+     * @return string $json 返回至前端的JSON
+     */
+    public function update(Request $request) {
+        // step1. 接收参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $id = $request->input('major.id');
+        $name = $request->input('major.name');
+
+        $params = [
+            'jwt' => $jwt,
+            'id' => $id,
+            'name' => $name
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+            'id' => 'required|int|min:1',
+            'name' => 'required|string',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'name.required' => '专业名称不能为空',
+            'name.string' => '专业名称内容必须为字符串',
+            'id.required' => '专业id不能为空',
+            'id.int' => '专业id必须为整型',
+            'id.min' => 'id字段值不能小于1'
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接收参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $resp = new Resp();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $majorBiz = new Major();
+        $code = $majorBiz->update($id, $name);
+
+        if ($code == Resp::MAJOR_NOT_EXIST) {
+            $json = $resp->majorNotExist([]);
+            return $json;
+        }
+
+        if ($code == Resp::MAJOR_HAS_BEEN_DELETE) {
+            $json = $resp->majorHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($code == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logUpdateMajor();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+
+        // step5. 封装返回值结构 start
+        $data = [
+            'user' => [
+                'role' => $userBiz->role->name,
+            ],
+            'major' => [
+                'id' => $majorBiz->id,
+                'name' => $majorBiz->name,
+                'createdTime' => $majorBiz->createdTime,
+                'updatedTime' => $majorBiz->updatedTime,
+            ],
+        ];
+        $json = $resp->success($data);
+        return $json;
+        // step5. 封装返回值结构 end
+    }
 }

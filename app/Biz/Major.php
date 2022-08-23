@@ -127,4 +127,36 @@ class Major {
         $this->createdTime = explode('.', $model->created_time)[0];
         $this->updatedTime = explode('.', $model->updated_time)[0];
     }
+
+    /**
+     * 本方法用于更新专业信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 专业id
+     * @param string $name 更新后的专业名称
+     * @return int $code 表示更新结果的错误码 成功则返回0
+     */
+    public function update($id, $name) {
+        $code = 0;
+        $model = new \App\Http\Models\Major();
+        $majorOrm = $model->findById($id);
+        if ($majorOrm == null) {
+            $code = Resp::MAJOR_NOT_EXIST;
+            return $code;
+        }
+
+        if ($majorOrm->status == \App\Http\Models\Major::STATUS['delete']) {
+            $code = Resp::MAJOR_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $result = $model->updateMajor($majorOrm, $name);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+
+        $this->fill($majorOrm);
+        return $code;
+    }
 }

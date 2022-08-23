@@ -114,4 +114,21 @@ class Major extends Model
             ->where('status', self::STATUS['normal'])
             ->count();
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于更新1条专业信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Major $orm 要更新的orm
+     * @param string $name department表的name字段值
+     * @return bool 更新结果
+     */
+    public function updateMajor($orm, $name) {
+        $orm->name = $name;
+        return $orm->save();
+    }
 }

@@ -230,6 +230,7 @@ class DepartmentController extends Controller {
      * @param Request $request 请求组件
      * 实际参数为:
      * user.jwt 操作者jwt
+     * department.id int 院系id
      * department.name string 院系名称
      * department.principalName string 院系负责人姓名
      * department.principalMobile string 院系负责人手机号
@@ -368,7 +369,8 @@ class DepartmentController extends Controller {
             'principalName.string' => '院系负责人姓名必须为字符串',
             'principalMobile.required' => '院系负责人手机号不能为空',
             'principalMobile.string' => '院系负责人手机号必须为字符串',
-            'id.int' => '用户id必须为整型',
+            'id.required' => '院系id不能为空',
+            'id.int' => '院系id必须为整型',
             'id.min' => 'id字段值不能小于1'
         ];
 
