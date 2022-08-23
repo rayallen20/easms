@@ -56,7 +56,7 @@ class Department extends Model {
      * 本方法用于创建1条department表中的信息
      * @access public
      * @author Roach<18410269837@163.com>
-     * @param \App\Biz\Department $department 业务层Department对象 表示待创建的部门信息
+     * @param \App\Biz\Department $department 业务层Department对象 表示待创建的院系信息
      * @return bool true表示创建成功 false表示创建失败
     */
     public function create($department) {

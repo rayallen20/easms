@@ -29,6 +29,7 @@ class Logger {
         'createDepartment' => '创建院系',
         'updateDepartment' => '更新院系信息',
         'deleteDepartment' => '删除院系信息',
+        'createMajor' => '创建专业',
     ];
 
     /**
@@ -238,6 +239,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['department'];
         $this->operateType = self::OPERATIONS['deleteDepartment'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录创建专业操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logCreateMajor(){
+        $code = 0;
+        $this->module = self::MODULES['department'];
+        $this->operateType = self::OPERATIONS['createMajor'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

@@ -190,4 +190,29 @@ class Department {
         }
         return $code;
     }
+
+    /**
+     * 本方法用于根据id字段值确认院系是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待确认院系的院系id
+     * @return int $code 存在返回0 否则返回表示院系信息不存在的错误码
+    */
+    public function exist($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Department();
+        $departmentOrm = $model->findById($id);
+        if ($departmentOrm == null) {
+            $code = Resp::DEPARTMENT_NOT_EXIST;
+            return $code;
+        }
+
+        if ($departmentOrm->status == \App\Http\Models\Department::STATUS['delete']) {
+            $code = Resp::DEPARTMENT_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->fill($departmentOrm);
+        return $code;
+    }
 }

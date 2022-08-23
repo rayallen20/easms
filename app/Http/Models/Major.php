@@ -43,4 +43,34 @@ class Major extends Model
      * @var string $dateFormat 时间戳格式
      */
     protected $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * 本方法用于创建1条major表中的信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param \App\Biz\Major $major 业务层Major对象 表示待创建的专业信息
+     * @return bool true表示创建成功 false表示创建失败
+     */
+    public function create($major) {
+        $this->department_id = $major->department->id;
+        $this->name = $major->name;
+        $this->status = Major::STATUS['normal'];
+        $this->sort = $this->findMaxId() + 1;
+        return $this->save();
+    }
+
+    /**
+     * 本方法用于查找major表中当前最大id值
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $maxId id字段最大值 若department表中无数据 则返回0
+     */
+    public function findMaxId() {
+        $maxId = $this->max('id');
+        if ($maxId == null) {
+            $maxId = 0;
+            return $maxId;
+        }
+        return $maxId;
+    }
 }
