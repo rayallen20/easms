@@ -1,7 +1,16 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Resp;
+
 class Teacher {
+    /**
+     * @const array 教职工性别字典
+    */
+    const GENDER = [
+        'female' => 0,
+        'male' => 1,
+    ];
 
     /**
      * @const array OFFICE_HOLDING_STATUS 教职工任职状态字典
@@ -124,7 +133,7 @@ class Teacher {
     public $name;
 
     /**
-     * @var string $gender 教职工性别
+     * @var int $gender 教职工性别
     */
     public $gender;
 
@@ -177,4 +186,173 @@ class Teacher {
      * @var Nationality $nationality 教职工国籍
     */
     public $nationality;
+
+    /**
+     * 本方法用于创建教职工
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $departmentId 院系id
+     * @param string $jobNumber 教职工工号
+     * @param string $name 教职工姓名
+     * @param int $genderCode 教职工性别编码
+     * @param string $birthDate 教职工出生日期
+     * @param string $intoSchoolDate 教职工入校日期
+     * @param int $officeHoldingCode 教职工任职状态编码
+     * @param int $educationBackgroundCode 教职工学历编码
+     * @param int $qualificationCode 教职工学历编码
+     * @param int $sourceCode 教职工学缘编码
+     * @param int $jobTitleId 专业技术职称id
+     * @param int $subjectId 学科id
+     * @param int $politicsId 政治面貌id
+     * @param int $nationalityId 国籍id
+     * @return int $code 操作状态码 0表示成功 操作失败则返回对应失败原因的状态码
+     */
+    public function create($departmentId, $jobNumber, $name, $genderCode, $birthDate, $intoSchoolDate,
+                           $officeHoldingCode, $educationBackgroundCode, $qualificationCode, $sourceCode,
+                           $jobTitleId, $subjectId, $politicsId, $nationalityId){
+        // 确认院系id是否存在
+        $departmentBiz = new Department();
+        $code = $departmentBiz->exist($departmentId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->department = $departmentBiz;
+
+        // 确认任职状态编码是否存在
+        if (!self::existOfficeHolding($officeHoldingCode)) {
+            $code = Resp::OFFICE_HOLDING_STATUS_NOT_EXIST;
+            return $code;
+        }
+        $this->officeHoldingStatus = $officeHoldingCode;
+
+        // 确认学历编码是否存在
+        if (!self::existEducationBackground($educationBackgroundCode)) {
+            $code = Resp::EDUCATION_BACKGROUND_NOT_EXIST;
+            return $code;
+        }
+        $this->educationBackground = $educationBackgroundCode;
+
+        // 确认学位编码是否存在
+        if (!self::existQualification($qualificationCode)) {
+            $code = Resp::QUALIFICATION_NOT_EXIST;
+            return $code;
+        }
+        $this->qualification = $qualificationCode;
+
+        // 确认学缘编码是否存在
+        if (!self::existSource($sourceCode)) {
+            $code = Resp::SOURCE_NOT_EXIST;
+            return $code;
+        }
+        $this->source = $sourceCode;
+
+        // 确认专业技术职称是否存在
+        $jobTitle = new JobTitle();
+        $code = $jobTitle->exist($jobTitleId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->jobTitle = $jobTitle;
+
+        // 确认学科是否存在
+        $subject = new Subject();
+        $code = $subject->exist($subjectId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->subject = $subject;
+
+        // 确认政治面貌是否存在
+        $politics = new Politics();
+        $code = $politics->exist($politicsId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->politics = $politics;
+
+        // 确认国籍是否存在
+        $nationality = new Nationality();
+        $code = $nationality->exist($nationalityId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->nationality = $nationality;
+
+        $this->jobNumber = $jobNumber;
+        $this->name = $name;
+        $this->gender = $genderCode;
+        $this->birthDate = $birthDate;
+        $this->intoSchoolDate = $intoSchoolDate;
+        $model = new \App\Http\Models\Teacher();
+        $result = $model->create($this);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于确定指定的任职状态编码是否存在对应的任职状态信息
+     * @access private
+     * @author Roach<18410269837@163.com>
+     * @param int $officeHoldingCode 任职状态编码
+     * @return bool true表示存在任职状态信息 false表示不存在
+    */
+    private function existOfficeHolding($officeHoldingCode) {
+        foreach (self::OFFICE_HOLDING_STATUS as $officeHolding) {
+            if ($officeHolding['code'] == $officeHoldingCode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 本方法用于确定指定的学历编码是否存在对应的学历信息
+     * @access private
+     * @author Roach<18410269837@163.com>
+     * @param int $educationBackgroundCode 学历编码
+     * @return bool true表示存在学历信息 false表示不存在
+     */
+    private function existEducationBackground($educationBackgroundCode) {
+        foreach (self::EDUCATION_BACKGROUNDS as $educationBackground) {
+            if ($educationBackground['code'] == $educationBackgroundCode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 本方法用于确定指定的学位编码是否存在对应的学位信息
+     * @access private
+     * @author Roach<18410269837@163.com>
+     * @param int $qualificationCode 学位编码
+     * @return bool true表示存在学位信息 false表示不存在
+     */
+    private function existQualification($qualificationCode) {
+        foreach (self::QUALIFICATIONS as $qualification) {
+            if ($qualification['code'] == $qualificationCode) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 本方法用于确定指定的学缘编码是否存在对应的学缘信息
+     * @access private
+     * @author Roach<18410269837@163.com>
+     * @param int $sourceCode 学缘编码
+     * @return bool true表示存在学缘信息 false表示不存在
+     */
+    private function existSource($sourceCode) {
+        foreach (self::SOURCES as $source) {
+            if ($source['code'] == $sourceCode) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

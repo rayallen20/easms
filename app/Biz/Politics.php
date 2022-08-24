@@ -1,6 +1,8 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Resp;
+
 class Politics {
     /**
      * @var int $id 政治面貌id
@@ -53,5 +55,30 @@ class Politics {
         $this->code = $model->code;
         $this->name = $model->name;
         $this->sort = $model->sort;
+    }
+
+    /**
+     * 本方法用于根据id字段值确认政治面貌是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待确认政治面貌的政治面貌id
+     * @return int $code 存在返回0 否则返回表示院系信息不存在的错误码
+     */
+    public function exist($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Politics();
+        $politicsOrm = $model->findById($id);
+        if ($politicsOrm == null) {
+            $code = Resp::POLITICS_NOT_EXIST;
+            return $code;
+        }
+
+        if ($politicsOrm->status == \App\Http\Models\Politics::STATUS['delete']) {
+            $code = Resp::POLITICS_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->fill($politicsOrm);
+        return $code;
     }
 }

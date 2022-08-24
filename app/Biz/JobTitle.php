@@ -1,6 +1,8 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Resp;
+
 class JobTitle {
     /**
      * @var int $id 专业技术职称id
@@ -53,5 +55,30 @@ class JobTitle {
         $this->code = $model->code;
         $this->name = $model->name;
         $this->sort = $model->sort;
+    }
+
+    /**
+     * 本方法用于根据id字段值确认专业技术职称是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待确认专业技术职称的专业技术职称id
+     * @return int $code 存在返回0 否则返回表示专业技术职称信息不存在的错误码
+     */
+    public function exist($id) {
+        $code = 0;
+        $model = new \App\Http\Models\JobTitle();
+        $jobTitleOrm = $model->findById($id);
+        if ($jobTitleOrm == null) {
+            $code = Resp::JOB_TITLE_NOT_EXIST;
+            return $code;
+        }
+
+        if ($jobTitleOrm->status == \App\Http\Models\JobTitle::STATUS['delete']) {
+            $code = Resp::JOB_TITLE_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->fill($jobTitleOrm);
+        return $code;
     }
 }

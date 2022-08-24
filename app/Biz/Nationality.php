@@ -1,6 +1,8 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Resp;
+
 class Nationality {
     /**
      * @var int $id 国籍id
@@ -53,5 +55,29 @@ class Nationality {
         $this->code = $model->code;
         $this->name = $model->name;
         $this->sort = $model->sort;
+    }
+
+    /**
+     * 本方法用于根据id字段值确认国籍是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待确认国籍的院系id
+     * @return int $code 存在返回0 否则返回表示国籍信息不存在的错误码
+     */
+    public function exist($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Nationality();
+        $nationalityOrm = $model->findById($id);
+        if ($nationalityOrm == null) {
+            $code = Resp::NATIONALITY_NOT_EXIST;
+            return $code;
+        }
+
+        if ($nationalityOrm->status == \App\Http\Models\Nationality::STATUS['delete']) {
+            $code = Resp::NATIONALITY_HAS_BEEN_DELETE;
+            return $code;
+        }
+        $this->fill($nationalityOrm);
+        return $code;
     }
 }

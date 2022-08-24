@@ -1,6 +1,8 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Resp;
+
 class Subject {
     /**
      * @var int $id 学科id
@@ -53,5 +55,30 @@ class Subject {
         $this->code = $model->code;
         $this->name = $model->name;
         $this->sort = $model->sort;
+    }
+
+    /**
+     * 本方法用于根据id字段值确认学科类别是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待确认学科类别的学科类别id
+     * @return int $code 存在返回0 否则返回表示学科类别不存在的错误码
+     */
+    public function exist($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Subject();
+        $subjectOrm = $model->findById($id);
+        if ($subjectOrm == null) {
+            $code = Resp::SUBJECT_NOT_EXIST;
+            return $code;
+        }
+
+        if ($subjectOrm->status == \App\Http\Models\Subject::STATUS['delete']) {
+            $code = Resp::SUBJECT_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->fill($subjectOrm);
+        return $code;
     }
 }

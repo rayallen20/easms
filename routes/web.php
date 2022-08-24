@@ -39,3 +39,4 @@ Route::get('v1/teacher/show/jobTitle', 'v1\TeacherController@showJobTitle');
 Route::get('v1/teacher/show/subject', 'v1\TeacherController@showSubject');
 Route::get('v1/teacher/show/politics', 'v1\TeacherController@showPolitics');
 Route::get('v1/teacher/show/nationality', 'v1\TeacherController@showNationality');
+Route::post('v1/teacher/create', 'v1\TeacherController@create');

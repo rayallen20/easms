@@ -55,4 +55,8 @@ class Politics extends Model {
             ->get();
         return $politics;
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
 }

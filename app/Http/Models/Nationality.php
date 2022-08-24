@@ -55,4 +55,8 @@ class Nationality extends Model {
             ->get();
         return $nationalities;
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
 }

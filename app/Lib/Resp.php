@@ -92,6 +92,66 @@ class Resp {
     */
     const MAJOR_HAS_BEEN_DELETE = 10017;
 
+    /**
+     * @const int OFFICE_HOLDING_STATUS_NOT_EXIST 本状态码表示任职状态不存在
+    */
+    const OFFICE_HOLDING_STATUS_NOT_EXIST = 10018;
+
+    /**
+     * @const int EDUCATION_BACKGROUND_NOT_EXIST 本状态码表示学历不存在
+     */
+    const EDUCATION_BACKGROUND_NOT_EXIST = 10019;
+
+    /**
+     * @const int QUALIFICATION_NOT_EXIST 本状态码表示学位不存在
+    */
+    const QUALIFICATION_NOT_EXIST = 10020;
+
+    /**
+     * @const int SOURCE_NOT_EXIST 本状态码表示学缘不存在
+     */
+    const SOURCE_NOT_EXIST = 10021;
+
+    /**
+     * @const int JOB_TITLE_NOT_EXIST 本状态码表示专业技术职称不存在
+    */
+    const JOB_TITLE_NOT_EXIST = 10022;
+
+    /**
+     * @const int JOB_TITLE_HAS_BEEN_DELETE 本状态码表示专业技术职称已被删除
+    */
+    const JOB_TITLE_HAS_BEEN_DELETE = 10023;
+
+    /**
+     * @const int SUBJECT_NOT_EXIST 本状态码表示学科类别不存在
+     */
+    const SUBJECT_NOT_EXIST = 10024;
+
+    /**
+     * @const int SUBJECT_HAS_BEEN_DELETE 本状态码表示学科类别已被删除
+     */
+    const SUBJECT_HAS_BEEN_DELETE = 10025;
+
+    /**
+     * @const int POLITICS_NOT_EXIST 本状态码表示政治面貌不存在
+     */
+    const POLITICS_NOT_EXIST = 10026;
+
+    /**
+     * @const int POLITICS_HAS_BEEN_DELETE 本状态码表示政治面貌已经被删除
+     */
+    const POLITICS_HAS_BEEN_DELETE = 10027;
+
+    /**
+     * @const int NATIONALITY_NOT_EXIST 本状态码表示国籍不存在
+    */
+    const NATIONALITY_NOT_EXIST= 10028;
+
+    /**
+     * @const int NATIONALITY_HAS_BEEN_DELETE 本状态码表示国籍已经被删除
+     */
+    const NATIONALITY_HAS_BEEN_DELETE = 10029;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -110,6 +170,18 @@ class Resp {
         self::DEPARTMENT_HAS_BEEN_DELETE => '院系信息已经被删除,无法执行当前操作',
         self::MAJOR_NOT_EXIST => '专业信息不存在',
         self::MAJOR_HAS_BEEN_DELETE => '专业信息已经被删除,无法执行当前操作',
+        self::OFFICE_HOLDING_STATUS_NOT_EXIST => '任职状态不存在',
+        self::EDUCATION_BACKGROUND_NOT_EXIST => '学历不存在',
+        self::QUALIFICATION_NOT_EXIST => '学位不存在',
+        self::SOURCE_NOT_EXIST => '学位不存在',
+        self::JOB_TITLE_NOT_EXIST => '专业技术职称不存在',
+        self::JOB_TITLE_HAS_BEEN_DELETE => '专业技术职称已被删除,无法执行当前操作',
+        self::SUBJECT_NOT_EXIST => '学科类别不存在',
+        self::SUBJECT_HAS_BEEN_DELETE => '学科类别已被删除,无法执行当前操作',
+        self::POLITICS_NOT_EXIST => '政治面貌不存在',
+        self::POLITICS_HAS_BEEN_DELETE => '政治面貌已被删除,无法执行当前操作',
+        self::NATIONALITY_NOT_EXIST => '国籍不存在',
+        self::NATIONALITY_HAS_BEEN_DELETE => '国籍已被删除,无法执行当前操作',
     ];
 
     /**
@@ -332,6 +404,138 @@ class Resp {
      */
     public function majorHasBeenDeleted($data) {
         return self::generate(self::MAJOR_HAS_BEEN_DELETE, self::MESSAGE[self::MAJOR_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在任职状态不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function officeHoldingNotExist($data) {
+        return self::generate(self::OFFICE_HOLDING_STATUS_NOT_EXIST, self::MESSAGE[self::OFFICE_HOLDING_STATUS_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在学历不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function educationBackgroundNotExist($data) {
+        return self::generate(self::EDUCATION_BACKGROUND_NOT_EXIST, self::MESSAGE[self::EDUCATION_BACKGROUND_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在学历不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function qualificationNotExist($data) {
+        return self::generate(self::QUALIFICATION_NOT_EXIST, self::MESSAGE[self::QUALIFICATION_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在学缘不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function sourceNotExist($data) {
+        return self::generate(self::SOURCE_NOT_EXIST, self::MESSAGE[self::SOURCE_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在专业技术职称不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function jobTitleNotExist($data) {
+        return self::generate(self::JOB_TITLE_NOT_EXIST, self::MESSAGE[self::JOB_TITLE_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在专业技术职称信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function jobTitleHasBeenDeleted($data) {
+        return self::generate(self::JOB_TITLE_HAS_BEEN_DELETE, self::MESSAGE[self::JOB_TITLE_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在学科类别不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function subjectNotExist($data) {
+        return self::generate(self::SUBJECT_NOT_EXIST, self::MESSAGE[self::SUBJECT_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在学科类别信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function subjectHasBeenDeleted($data) {
+        return self::generate(self::SUBJECT_HAS_BEEN_DELETE, self::MESSAGE[self::SUBJECT_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在政治面貌不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function politicsNotExist($data) {
+        return self::generate(self::POLITICS_NOT_EXIST, self::MESSAGE[self::POLITICS_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在政治面貌信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function politicsHasBeenDeleted($data) {
+        return self::generate(self::POLITICS_HAS_BEEN_DELETE, self::MESSAGE[self::POLITICS_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在国籍不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function nationalityNotExist($data) {
+        return self::generate(self::NATIONALITY_NOT_EXIST, self::MESSAGE[self::NATIONALITY_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在国籍信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function nationalityHasBeenDeleted($data) {
+        return self::generate(self::NATIONALITY_HAS_BEEN_DELETE, self::MESSAGE[self::NATIONALITY_HAS_BEEN_DELETE], $data);
     }
 }
 

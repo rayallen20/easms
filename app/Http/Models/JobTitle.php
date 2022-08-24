@@ -55,4 +55,8 @@ class JobTitle extends Model {
             ->get();
         return $jobTitles;
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
 }
