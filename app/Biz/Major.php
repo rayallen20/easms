@@ -99,7 +99,7 @@ class Major {
 
         $model = new \App\Http\Models\Major();
         $majorCollection = $model->findNormalMajors($departmentId, $offset, $itemPerPage);
-        for ($i =0; $i <= count($majorCollection) - 1; $i++) {
+        for ($i = 0; $i <= count($majorCollection) - 1; $i++) {
             $majorOrm = $majorCollection[$i];
             $major = new Major();
             $major->fill($majorOrm);
