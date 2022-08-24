@@ -53,7 +53,7 @@ class Teacher extends Model {
         $this->department_id = $teacher->department->id;
         $this->job_number = $teacher->jobNumber;
         $this->name = $teacher->name;
-        $this->gender = $teacher->gender;
+        $this->gender = (string)$teacher->gender;
         $this->birth_date = $teacher->birthDate;
         $this->into_school_date = $teacher->intoSchoolDate;
         $this->office_holding_code = $teacher->officeHoldingStatus;
