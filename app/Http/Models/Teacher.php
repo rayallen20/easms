@@ -1,7 +1,9 @@
 <?php
 namespace App\Http\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Teacher extends Model {
     /**
@@ -43,6 +45,46 @@ class Teacher extends Model {
     protected $dateFormat = 'Y-m-d H:i:s';
 
     /**
+     * 本方法用于定义本表(teacher表)与department表之间通过teacher.department_id和department.id建立的1对1关系
+     * @return HasOne
+     */
+    public function department() {
+        return $this->hasOne('App\Http\Models\Department', 'id', 'department_id');
+    }
+
+    /**
+     * 本方法用于定义本表(teacher表)与job_title表之间通过teacher.job_title_id和job_title.id建立的1对1关系
+     * @return HasOne
+     */
+    public function jobTitle() {
+        return $this->hasOne('App\Http\Models\JobTitle', 'id', 'job_title_id');
+    }
+
+    /**
+     * 本方法用于定义本表(teacher表)与subject表之间通过teacher.subject_id和subject.id建立的1对1关系
+     * @return HasOne
+     */
+    public function subject() {
+        return $this->hasOne('App\Http\Models\Subject', 'id', 'subject_id');
+    }
+
+    /**
+     * 本方法用于定义本表(teacher表)与politics表之间通过teacher.politics_id和politics.id建立的1对1关系
+     * @return HasOne
+     */
+    public function politics() {
+        return $this->hasOne('App\Http\Models\Politics', 'id', 'politics_id');
+    }
+
+    /**
+     * 本方法用于定义本表(teacher表)与nationality表之间通过teacher.nationality_id和nationality.id建立的1对1关系
+     * @return HasOne
+     */
+    public function nationality() {
+        return $this->hasOne('App\Http\Models\Nationality', 'id', 'nationality_id');
+    }
+
+    /**
      * 本方法用于创建1条Teacher表中的信息
      * @access public
      * @author Roach<18410269837@163.com>
@@ -82,5 +124,32 @@ class Teacher extends Model {
             return $maxId;
         }
         return $maxId;
+    }
+
+    /**
+     * 本方法用于分页查询状态正常的教职工信息集合 结果集按sort字段值升序排序
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $offset 偏移量
+     * @param int $limit 每页信息数量
+     * @return Collection 查询到的结果集
+     */
+    public function findNormalTeachers($offset, $limit) {
+        $departments = $this->where('status', self::STATUS['normal'])
+            ->orderBy('sort', 'asc')
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+        return $departments;
+    }
+
+    /**
+     * 本方法用于计算状态正常的教职工信息的总条数
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int 信息总条数
+     */
+    public function countNormalTeachers() {
+        return $this->where('status', self::STATUS['normal'])->count();
     }
 }

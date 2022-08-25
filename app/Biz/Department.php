@@ -116,7 +116,6 @@ class Department {
      * @param \App\Http\Models\Department $model 院系信息ORM
      * @return void
      */
-
     public function fill($model) {
         $this->id = $model->id;
         $this->name = $model->name;

@@ -1,6 +1,7 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Pagination;
 use App\Lib\Resp;
 
 class Teacher {
@@ -188,6 +189,16 @@ class Teacher {
     public $nationality;
 
     /**
+     * @var string $createdTime 教职工创建时间
+    */
+    public $createdTime;
+
+    /**
+     * @var string $updatedTime 教职工修改时间
+    */
+    public $updatedTime;
+
+    /**
      * 本方法用于创建教职工
      * @access public
      * @author Roach<18410269837@163.com>
@@ -354,5 +365,73 @@ class Teacher {
             }
         }
         return false;
+    }
+
+    /**
+     * 本方法用于列表展示教职工信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $currentPage 当前页数
+     * @param int $itemPerPage 每页显示信息条数
+     * @return array $result 本数组共3项内容:
+     * array<Teacher> $result['teachers']:教职工信息集合
+     * App\Lib\Pagination $result['pagination']:分页器对象
+     * int $result['code']:错误码
+     */
+    public function list($currentPage, $itemPerPage) {
+        $result = [
+            'teachers' => [],
+            'pagination' => null,
+            'code' => 0
+        ];
+
+        $pagination = new Pagination($currentPage, $itemPerPage);
+        $offset = $pagination->calcOffset();
+
+        $model = new \App\Http\Models\Teacher();
+        $teacherCollection = $model->findNormalTeachers($offset, $itemPerPage);
+        for ($i = 0; $i <= count($teacherCollection) - 1; $i++) {
+            $teacherOrm = $teacherCollection[$i];
+            $teacher = new Teacher();
+            $teacher->fill($teacherOrm);
+            $result['teachers'][$i] = $teacher;
+        }
+
+        $totalTeacherNum = $model->countNormalTeachers();
+        $pagination->calcTotalPage($totalTeacherNum);
+        $result['pagination'] = $pagination;
+        return $result;
+    }
+
+    /**
+     * 本方法用于根据Teacher表的ORM填充Biz层的Teacher对象
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param \App\Http\Models\Teacher $model 院系信息ORM
+     * @return void
+     */
+    public function fill($model) {
+        $this->id = $model->id;
+        $this->department = new Department();
+        $this->department->fill($model->department);
+        $this->jobNumber = $model->job_number;
+        $this->name = $model->name;
+        $this->gender = $model->gender;
+        $this->birthDate = $model->birth_date;
+        $this->intoSchoolDate = $model->into_school_date;
+        $this->officeHoldingStatus = $model->office_holding_code;
+        $this->educationBackground = $model->education_background_code;
+        $this->qualification = $model->qualification_code;
+        $this->source = $model->source_code;
+        $this->jobTitle = new JobTitle();
+        $this->jobTitle->fill($model->jobTitle);
+        $this->subject = new Subject();
+        $this->subject->fill($model->subject);
+        $this->politics = new Politics();
+        $this->politics->fill($model->politics);
+        $this->nationality = new Nationality();
+        $this->nationality->fill($model->nationality);
+        $this->createdTime = explode('.', $model->created_time)[0];
+        $this->updatedTime = explode('.', $model->updated_time)[0];
     }
 }

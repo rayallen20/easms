@@ -416,4 +416,193 @@ class TeacherController extends Controller {
         }
         return null;
     }
+
+    /**
+     * 本方法用于以列表形式查看教师信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * jwt string 用户jwt
+     * currentPage int 当前页数
+     * itemPerPage int 每页显示信息条数
+     * @return string $json 返回的JSON
+     */
+    public function list(Request $request) {
+        // step1. 接受参数 验证规则 start
+        $jwt = $request->input('user.jwt');
+        $currentPage = $request->input('pagination.currentPage');
+        $itemPerPage = $request->input('pagination.itemPerPage');
+
+        $params = [
+            'currentPage' => $currentPage,
+            'itemPerPage' => $itemPerPage,
+            'jwt' => $jwt,
+        ];
+
+        $rules = [
+            'currentPage' => 'required|int|min:1',
+            'itemPerPage' => 'required|int|min:1',
+            'jwt' => 'required|string',
+        ];
+
+        $exceptionMessages = [
+            'currentPage.required' => '当前页数不能为空',
+            'currentPage.int' => '当前页数必须为整型',
+            'currentPage.min' => '当前页数不得小于1',
+            'itemPerPage.required' => '每页显示条目不能为空',
+            'itemPerPage.int' => '每页显示条目必须为整型',
+            'itemPerPage.min' => '每页显示条目不得小于1',
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串'
+        ];
+
+        $resp = new Resp();
+
+        $lib = new Lib();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接受参数 验证规则 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $teacherBiz = new Teacher();
+        $result = $teacherBiz->list($currentPage, $itemPerPage);
+        // step3. 处理逻辑 end
+
+        // step4. 封装返回值结构 start
+        $data = [
+            'user' => [
+                'role' => $userBiz->role->name
+            ],
+            'pagination' => $result['pagination'],
+            'teachers' => []
+        ];
+
+        for ($i = 0; $i <= count($result['teachers']) - 1; $i++) {
+            $teacher = $result['teachers'][$i];
+            $data['teachers'][$i] = [
+                'id' => $teacher->id,
+                'department' => [
+                    'id' => $teacher->department->id,
+                    'name' => $teacher->department->name,
+                ],
+                'jobNumber' => $teacher->jobNumber,
+                'name' => $teacher->name,
+                'gender' => [
+                    'code' => $teacher->gender,
+                    'display' => self::confirmGender($teacher->gender)
+                ],
+                'birthDate' => $teacher->birthDate,
+                'intoSchoolDate' => $teacher->intoSchoolDate,
+                'officeHolding' => [
+                    'code' => $teacher->officeHoldingStatus,
+                    'display' => self::confirmOfficeHolding($teacher->officeHoldingStatus)
+                ],
+                'educationBackground' => [
+                    'code' => $teacher->educationBackground,
+                    'display' => self::confirmEducationBackground($teacher->educationBackground)
+                ],
+                'qualification' => [
+                    'code' => $teacher->qualification,
+                    'display' => self::confirmQualification($teacher->qualification)
+                ],
+                'source' => [
+                    'code' => $teacher->source,
+                    'display' => self::confirmSource($teacher->source)
+                ],
+                'jobTitle' => [
+                    'id' => $teacher->jobTitle->id,
+                    'name' => $teacher->jobTitle->name,
+                ],
+                'subject' => [
+                    'id' => $teacher->subject->id,
+                    'name' => $teacher->subject->name,
+                ],
+                'politics' => [
+                    'id' => $teacher->politics->id,
+                    'name' => $teacher->politics->name,
+                ],
+                'nationality' => [
+                    'id' => $teacher->nationality->id,
+                    'name' => $teacher->nationality->name,
+                ],
+                'createdTime' => $teacher->createdTime,
+                'updatedTime' => $teacher->updatedTime,
+            ];
+        }
+        // step4. 封装返回值结构 end
+
+        $json = $resp->success($data);
+        return $json;
+    }
+
+    /**
+     * 本方法用于根据性别编码确认性别
+    */
+    private function confirmGender($genderCode) {
+        foreach (Teacher::GENDER as $gender => $code) {
+            if ($genderCode == $code) {
+                return $gender;
+            }
+        }
+        return null;
+    }
+
+    private function confirmOfficeHolding($officeHoldingStatus) {
+        foreach (Teacher::OFFICE_HOLDING_STATUS as $officeHolding) {
+            if ($officeHolding['code'] == $officeHoldingStatus) {
+                return $officeHolding['display'];
+            }
+        }
+        return null;
+    }
+
+    private function confirmEducationBackground($educationBackgroundCode) {
+        foreach (Teacher::EDUCATION_BACKGROUNDS as $educationBackground) {
+            if ($educationBackground['code'] == $educationBackgroundCode) {
+                return $educationBackground['display'];
+            }
+        }
+        return null;
+    }
+
+    private function confirmQualification($qualificationCode) {
+        foreach (Teacher::QUALIFICATIONS as $qualification) {
+            if ($qualification['code'] == $qualificationCode) {
+                return $qualification['display'];
+            }
+        }
+        return null;
+    }
+
+    private function confirmSource($sourceCode) {
+        foreach (Teacher::SOURCES as $source) {
+            if ($source['code'] == $sourceCode) {
+                return $source['display'];
+            }
+        }
+        return null;
+    }
 }
