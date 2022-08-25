@@ -77,6 +77,8 @@ class Nation {
             $code = Resp::NATIONALITY_HAS_BEEN_DELETE;
             return $code;
         }
+
+        $this->fill($nationOrm);
         return $code;
     }
 }

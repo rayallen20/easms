@@ -52,6 +52,7 @@ class Student extends Model {
     public function create($student) {
         $this->number = $student->number;
         $this->id_number = $student->idNumber;
+        $this->name = $student->name;
         $this->gender = (string)$student->gender;
         $this->nation_id = $student->nation->id;
         $this->exam_area_id = $student->examArea->id;
