@@ -177,4 +177,23 @@ class Lib {
 
         return $result;
     }
+
+    /**
+     * 本方法用于判断给定字符串是否符合身份证号格式
+     * 规则:字符串必须为18位数字
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $idNumber 待校验的身份证号
+     * @return bool true表示符合身份证号格式 false表示不符合身份证号格式
+     */
+    public function isIdNumber($idNumber) {
+        if (preg_match("/^\d{18}$/", $idNumber)) {
+            return true;
+        }
+
+        if (preg_match("/^\d{17}X$/", $idNumber)) {
+            return true;
+        }
+        return false;
+    }
 }

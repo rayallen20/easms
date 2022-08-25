@@ -6,7 +6,7 @@ use App\Lib\Resp;
 
 class Teacher {
     /**
-     * @const array 教职工性别字典
+     * @const array GENDER 教职工性别字典
     */
     const GENDER = [
         'female' => 0,

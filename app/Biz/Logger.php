@@ -35,6 +35,7 @@ class Logger {
         'createTeacher' => '创建教职工',
         'updateTeacher' => '更新教职工信息',
         'deleteTeacher' => '删除教职工信息',
+        'createStudent' => '创建学生',
     ];
 
     /**
@@ -364,6 +365,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['teacher'];
         $this->operateType = self::OPERATIONS['deleteTeacher'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录创建学生操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logCreateStudent(){
+        $code = 0;
+        $this->module = self::MODULES['student'];
+        $this->operateType = self::OPERATIONS['createStudent'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

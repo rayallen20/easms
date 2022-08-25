@@ -188,4 +188,29 @@ class Major {
         }
         return $code;
     }
+
+    /**
+     * 本方法用于根据id字段值确认专业是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待确认专业的院系id
+     * @return int $code 存在返回0 否则返回表示专业信息不存在的错误码
+     */
+    public function exist($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Major();
+        $majorOrm = $model->findById($id);
+        if ($majorOrm == null) {
+            $code = Resp::MAJOR_NOT_EXIST;
+            return $code;
+        }
+
+        if ($majorOrm->status == \App\Http\Models\Major::STATUS['delete']) {
+            $code = Resp::MAJOR_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->fill($majorOrm);
+        return $code;
+    }
 }

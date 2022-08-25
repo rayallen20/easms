@@ -343,6 +343,8 @@ class TeacherController extends Controller {
 
     /**
      * 本方法用于为create方法校验参数
+     * @access private
+     * @author Roach<18410269837@163.com>
      * 规则:
      * name: 必须存在
      * birthDate: 必须为一个表示日期的字符串

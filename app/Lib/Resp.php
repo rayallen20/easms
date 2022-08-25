@@ -162,6 +162,46 @@ class Resp {
      */
     const TEACHER_HAS_BEEN_DELETE = 10031;
 
+    /**
+     * @const int MAJOR_NOT_BELONGS_TO_DEPARTMENT 本状态码表示指定专业不隶属于指定院系
+    */
+    const MAJOR_NOT_BELONGS_TO_DEPARTMENT = 10032;
+
+    /**
+     * @const int NATION_NOT_EXIST 本状态码表示民族信息不存在
+     */
+    const NATION_NOT_EXIST = 10033;
+
+    /**
+     * @const int NATION_HAS_BEEN_DELETE 本状态码表示民族信息已经被删除
+     */
+    const NATION_HAS_BEEN_DELETE = 10034;
+
+    /**
+     * @const int EDUCATION_LEVEL_NOT_EXIST 本状态码表示培养层次信息不存在
+    */
+    const EDUCATION_LEVEL_NOT_EXIST = 10035;
+
+    /**
+     * @const int LENGTH_OF_SCHOOL_NOT_EXIST 本状态码表示学制信息不存在
+     */
+    const LENGTH_OF_SCHOOL_NOT_EXIST = 10036;
+
+    /**
+     * @const int DEGREE_NOT_EXIST 本状态码表示学位信息不存在
+     */
+    const DEGREE_NOT_EXIST = 10037;
+
+    /**
+     * @const int EXAM_AREA_NOT_EXIST 本状态码表示考区信息不存在
+     */
+    const EXAM_AREA_NOT_EXIST = 10038;
+
+    /**
+     * @const int EXAM_AREA_HAS_BEEN_DELETE 本状态码表示考区信息已经被删除
+     */
+    const EXAM_AREA_HAS_BEEN_DELETE = 10039;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -194,6 +234,14 @@ class Resp {
         self::NATIONALITY_HAS_BEEN_DELETE => '国籍已被删除,无法执行当前操作',
         self::TEACHER_NOT_EXIST => '教职工信息不存在',
         self::TEACHER_HAS_BEEN_DELETE => '教职工已被删除,无法执行当前操作',
+        self::MAJOR_NOT_BELONGS_TO_DEPARTMENT => '该专业不隶属于该院系,无法执行当前操作',
+        self::NATION_NOT_EXIST => '民族不存在',
+        self::NATION_HAS_BEEN_DELETE => '民族已被删除,无法执行当前操作',
+        self::EDUCATION_LEVEL_NOT_EXIST => '培养层次信息不存在',
+        self::LENGTH_OF_SCHOOL_NOT_EXIST => '学制信息不存在',
+        self::DEGREE_NOT_EXIST => '学位信息不存在',
+        self::EXAM_AREA_NOT_EXIST => '考区信息不存在',
+        self::EXAM_AREA_HAS_BEEN_DELETE => '考区已被删除,无法执行当前操作',
     ];
 
     /**
@@ -570,6 +618,94 @@ class Resp {
      */
     public function teacherHasBeenDeleted($data) {
         return self::generate(self::TEACHER_HAS_BEEN_DELETE, self::MESSAGE[self::TEACHER_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在指定专业不隶属于指定院系时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function majorNotBelongsToDepartment($data) {
+        return self::generate(self::MAJOR_NOT_BELONGS_TO_DEPARTMENT, self::MESSAGE[self::MAJOR_NOT_BELONGS_TO_DEPARTMENT], $data);
+    }
+
+    /**
+     * 本方法用于生成在民族信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function nationNotExist($data) {
+        return self::generate(self::NATION_NOT_EXIST, self::MESSAGE[self::NATION_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在民族信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function nationHasBeenDeleted($data) {
+        return self::generate(self::NATION_HAS_BEEN_DELETE, self::MESSAGE[self::NATION_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在培养层次信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function educationLevelNotExist($data) {
+        return self::generate(self::EDUCATION_LEVEL_NOT_EXIST, self::MESSAGE[self::EDUCATION_LEVEL_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在学制信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function lengthOfSchoolNotExist($data) {
+        return self::generate(self::LENGTH_OF_SCHOOL_NOT_EXIST, self::MESSAGE[self::LENGTH_OF_SCHOOL_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在学位信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function degreeNotExist($data) {
+        return self::generate(self::DEGREE_NOT_EXIST, self::MESSAGE[self::DEGREE_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在考区信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function examAreaNotExist($data) {
+        return self::generate(self::EXAM_AREA_NOT_EXIST, self::MESSAGE[self::EXAM_AREA_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在考区信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function examAreaHasBeenDeleted($data) {
+        return self::generate(self::EXAM_AREA_HAS_BEEN_DELETE, self::MESSAGE[self::EXAM_AREA_HAS_BEEN_DELETE], $data);
     }
 }
 
