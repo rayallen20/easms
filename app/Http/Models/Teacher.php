@@ -182,4 +182,17 @@ class Teacher extends Model {
         $orm->nationality_id = $biz->nationality->id;
         return $orm->save();
     }
+
+    /**
+     * 本方法用于更新1条教职工信息的状态
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Teacher $orm 要更新的orm
+     * @param string $status 更新后的status字段值
+     * @return bool 更新结果
+     */
+    public function updateStatus($orm, $status) {
+        $orm->status = $status;
+        return $orm->save();
+    }
 }

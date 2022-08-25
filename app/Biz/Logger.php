@@ -34,6 +34,7 @@ class Logger {
         'deleteMajor' => '删除专业信息',
         'createTeacher' => '创建教职工',
         'updateTeacher' => '更新教职工信息',
+        'deleteTeacher' => '删除教职工信息',
     ];
 
     /**
@@ -343,6 +344,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['teacher'];
         $this->operateType = self::OPERATIONS['updateTeacher'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录删除教职工操作操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logDeleteTeacher(){
+        $code = 0;
+        $this->module = self::MODULES['teacher'];
+        $this->operateType = self::OPERATIONS['deleteTeacher'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

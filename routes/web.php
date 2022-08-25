@@ -42,3 +42,4 @@ Route::get('v1/teacher/show/nationality', 'v1\TeacherController@showNationality'
 Route::post('v1/teacher/create', 'v1\TeacherController@create');
 Route::post('v1/teacher/list', 'v1\TeacherController@list');
 Route::post('v1/teacher/update', 'v1\TeacherController@update');
+Route::post('v1/teacher/delete', 'v1\TeacherController@delete');

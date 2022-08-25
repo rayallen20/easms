@@ -948,4 +948,101 @@ class TeacherController extends Controller {
         }
         return null;
     }
+
+    /**
+     * 本方法用于删除院系
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * user.jwt string 操作者用户jwt
+     * teacher.id int 被删除的教职工信息id
+     * @return string $json 返回至前端的JSON
+     */
+    public function delete(Request $request) {
+        // step1. 接收参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $id = $request->input('teacher.id');
+
+        $params = [
+            'jwt' => $jwt,
+            'id' => $id,
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+            'id' => 'required|int|min:1',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'id.required' => '教职工id不能为空',
+            'id.int' => '教职工id必须为整型',
+            'id.min' => '教职工id字段值不能小于1',
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接收参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $teacherBiz = new Teacher();
+        $code = $teacherBiz->delete($id);
+        if ($code == Resp::TEACHER_NOT_EXIST) {
+            $json = $resp->teacherNotExist([]);
+            return $json;
+        }
+
+        if ($code == Resp::TEACHER_HAS_BEEN_DELETE) {
+            $json = $resp->teacherHasBeenDeleted([]);
+            return $json;
+        }
+        if ($code == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logDeleteTeacher();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+
+        $json = $resp->success([]);
+        return $json;
+    }
 }

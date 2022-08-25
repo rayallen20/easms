@@ -555,4 +555,33 @@ class Teacher {
         $this->fill($teacherOrm);
         return $code;
     }
+
+    /**
+     * 本方法用于删除教职工
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待删除院系的院系id
+     * @return int $code 错误码 若操作无错误则返回0
+     */
+    public function delete($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Teacher();
+        $teacherOrm = $model->findById($id);
+        if ($teacherOrm == null) {
+            $code = Resp::TEACHER_NOT_EXIST;
+            return $code;
+        }
+
+        if ($teacherOrm->status == \App\Http\Models\Teacher::STATUS['delete']) {
+            $code = Resp::TEACHER_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $result = $model->updateStatus($teacherOrm, \App\Http\Models\Teacher::STATUS['delete']);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
 }
