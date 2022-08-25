@@ -434,4 +434,125 @@ class Teacher {
         $this->createdTime = explode('.', $model->created_time)[0];
         $this->updatedTime = explode('.', $model->updated_time)[0];
     }
+
+    /**
+     * 本方法用于更新教职工信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 教职工id
+     * @param int $departmentId 院系id
+     * @param string $jobNumber 教职工工号
+     * @param string $name 教职工姓名
+     * @param int $genderCode 教职工性别编码
+     * @param string $birthDate 教职工出生日期
+     * @param string $intoSchoolDate 教职工入校日期
+     * @param int $officeHoldingCode 教职工任职状态编码
+     * @param int $educationBackgroundCode 教职工学历编码
+     * @param int $qualificationCode 教职工学历编码
+     * @param int $sourceCode 教职工学缘编码
+     * @param int $jobTitleId 专业技术职称id
+     * @param int $subjectId 学科id
+     * @param int $politicsId 政治面貌id
+     * @param int $nationalityId 国籍id
+     * @return int $code 操作状态码 0表示成功 操作失败则返回对应失败原因的状态码
+     */
+    public function update($id, $departmentId, $jobNumber, $name, $genderCode, $birthDate, $intoSchoolDate,
+                           $officeHoldingCode, $educationBackgroundCode, $qualificationCode, $sourceCode,
+                           $jobTitleId, $subjectId, $politicsId, $nationalityId){
+        $code = 0;
+        $model = new \App\Http\Models\Teacher();
+        $teacherOrm = $model->findById($id);
+        if ($teacherOrm == null) {
+            $code = Resp::TEACHER_NOT_EXIST;
+            return $code;
+        }
+
+        if ($teacherOrm->status == \App\Http\Models\Teacher::STATUS['delete']) {
+            $code = Resp::TEACHER_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        // 确认院系id是否存在
+        $departmentBiz = new Department();
+        $code = $departmentBiz->exist($departmentId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->department = $departmentBiz;
+
+        // 确认任职状态编码是否存在
+        if (!self::existOfficeHolding($officeHoldingCode)) {
+            $code = Resp::OFFICE_HOLDING_STATUS_NOT_EXIST;
+            return $code;
+        }
+        $this->officeHoldingStatus = $officeHoldingCode;
+
+        // 确认学历编码是否存在
+        if (!self::existEducationBackground($educationBackgroundCode)) {
+            $code = Resp::EDUCATION_BACKGROUND_NOT_EXIST;
+            return $code;
+        }
+        $this->educationBackground = $educationBackgroundCode;
+
+        // 确认学位编码是否存在
+        if (!self::existQualification($qualificationCode)) {
+            $code = Resp::QUALIFICATION_NOT_EXIST;
+            return $code;
+        }
+        $this->qualification = $qualificationCode;
+
+        // 确认学缘编码是否存在
+        if (!self::existSource($sourceCode)) {
+            $code = Resp::SOURCE_NOT_EXIST;
+            return $code;
+        }
+        $this->source = $sourceCode;
+
+        // 确认专业技术职称是否存在
+        $jobTitle = new JobTitle();
+        $code = $jobTitle->exist($jobTitleId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->jobTitle = $jobTitle;
+
+        // 确认学科是否存在
+        $subject = new Subject();
+        $code = $subject->exist($subjectId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->subject = $subject;
+
+        // 确认政治面貌是否存在
+        $politics = new Politics();
+        $code = $politics->exist($politicsId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->politics = $politics;
+
+        // 确认国籍是否存在
+        $nationality = new Nationality();
+        $code = $nationality->exist($nationalityId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->nationality = $nationality;
+
+        $this->jobNumber = $jobNumber;
+        $this->name = $name;
+        $this->gender = $genderCode;
+        $this->birthDate = $birthDate;
+        $this->intoSchoolDate = $intoSchoolDate;
+
+        $result = $model->updateTeacher($teacherOrm, $this);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+
+        $this->fill($teacherOrm);
+        return $code;
+    }
 }

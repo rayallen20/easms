@@ -145,12 +145,22 @@ class Resp {
     /**
      * @const int NATIONALITY_NOT_EXIST 本状态码表示国籍不存在
     */
-    const NATIONALITY_NOT_EXIST= 10028;
+    const NATIONALITY_NOT_EXIST = 10028;
 
     /**
      * @const int NATIONALITY_HAS_BEEN_DELETE 本状态码表示国籍已经被删除
      */
     const NATIONALITY_HAS_BEEN_DELETE = 10029;
+
+    /**
+     * @const int TEACHER_NOT_EXIST 本状态码表示教职工信息不存在
+     */
+    const TEACHER_NOT_EXIST = 10030;
+
+    /**
+     * @const int TEACHER_HAS_BEEN_DELETE 本状态码表示教职工信息已经被删除
+     */
+    const TEACHER_HAS_BEEN_DELETE = 10031;
 
     const MESSAGE = [
         self::SUCCESS => '操作成功',
@@ -182,6 +192,8 @@ class Resp {
         self::POLITICS_HAS_BEEN_DELETE => '政治面貌已被删除,无法执行当前操作',
         self::NATIONALITY_NOT_EXIST => '国籍不存在',
         self::NATIONALITY_HAS_BEEN_DELETE => '国籍已被删除,无法执行当前操作',
+        self::TEACHER_NOT_EXIST => '教职工信息不存在',
+        self::TEACHER_HAS_BEEN_DELETE => '教职工已被删除,无法执行当前操作',
     ];
 
     /**
@@ -536,6 +548,28 @@ class Resp {
      */
     public function nationalityHasBeenDeleted($data) {
         return self::generate(self::NATIONALITY_HAS_BEEN_DELETE, self::MESSAGE[self::NATIONALITY_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在教职工信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function teacherNotExist($data) {
+        return self::generate(self::TEACHER_NOT_EXIST, self::MESSAGE[self::TEACHER_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在教职工信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function teacherHasBeenDeleted($data) {
+        return self::generate(self::TEACHER_HAS_BEEN_DELETE, self::MESSAGE[self::TEACHER_HAS_BEEN_DELETE], $data);
     }
 }
 

@@ -152,4 +152,34 @@ class Teacher extends Model {
     public function countNormalTeachers() {
         return $this->where('status', self::STATUS['normal'])->count();
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于更新1条教职工信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Teacher $orm 要更新的orm
+     * @param \App\Biz\Teacher $biz 业务层Teacher对象 表示待更新的教职工
+     * @return bool 更新结果
+     */
+    public function updateTeacher($orm, $biz) {
+        $orm->department_id = $biz->department->id;
+        $orm->job_number = $biz->jobNumber;
+        $orm->name = $biz->name;
+        $orm->gender = (string)$biz->gender;
+        $orm->birth_date = $biz->birthDate;
+        $orm->into_school_date = $biz->intoSchoolDate;
+        $orm->office_holding_code = $biz->officeHoldingStatus;
+        $orm->education_background_code = $biz->educationBackground;
+        $orm->qualification_code = $biz->qualification;
+        $orm->source_code = $biz->source;
+        $orm->job_title_id = $biz->jobTitle->id;
+        $orm->subject_id = $biz->subject->id;
+        $orm->politics_id = $biz->politics->id;
+        $orm->nationality_id = $biz->nationality->id;
+        return $orm->save();
+    }
 }
