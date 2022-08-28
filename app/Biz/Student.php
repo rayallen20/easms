@@ -488,4 +488,33 @@ class Student {
         $this->fill($studentOrm);
         return $code;
     }
+
+    /**
+     * 本方法用于删除学生
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待删除院系的学生id
+     * @return int $code 错误码 若操作无错误则返回0
+     */
+    public function delete($id) {
+        $code = 0;
+        $model = new \App\Http\Models\Student();
+        $studentOrm = $model->findById($id);
+        if ($studentOrm == null) {
+            $code = Resp::STUDENT_NOT_EXIST;
+            return $code;
+        }
+
+        if ($studentOrm->status == \App\Http\Models\Student::STATUS['delete']) {
+            $code = Resp::STUDENT_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $result = $model->updateStatus($studentOrm, \App\Http\Models\Student::STATUS['delete']);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
 }
