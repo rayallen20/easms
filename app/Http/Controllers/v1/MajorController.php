@@ -442,4 +442,69 @@ class MajorController extends Controller {
         $json = $resp->success([]);
         return $json;
     }
+
+    /**
+     * 本方法用于显示指定院系下的所有信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * department.id int 指定的院系信息id
+     * @return string $json
+     */
+    public function showAll(Request $request) {
+        // step1. 接收参数并校验 start
+        $id = $request->input('major.department.id');
+
+        $params = [
+            'id' => $id,
+        ];
+
+        $rules = [
+            'id' => 'required|int|min:1',
+        ];
+
+        $exceptionMessages = [
+            'id.int' => '院系id必须为整型',
+            'id.min' => 'id字段值不能小于1',
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接收参数并校验 end
+
+        // step2. 处理逻辑 start
+        $majorBiz = new Major();
+        $result = $majorBiz->showAll($id);
+        $code = $result['code'];
+        if ($code == Resp::DEPARTMENT_NOT_EXIST) {
+            $json = $resp->departmentNotExist([]);
+            return $json;
+        }
+
+        if ($code == Resp::DEPARTMENT_HAS_BEEN_DELETE) {
+            $json = $resp->departmentHasBeenDeleted([]);
+            return $json;
+        }
+        // step2. 处理逻辑 end
+
+        // step3. 封装返回值结构 start
+        $data = [];
+        for ($i = 0; $i <= count($result['majors']) - 1; $i++) {
+            $major = [
+                'id' => $result['majors'][$i]->id,
+                'name' => $result['majors'][$i]->name,
+            ];
+            $data[$i] = $major;
+        }
+        // step3. 封装返回值结构 end
+        $resp = new Resp();
+        $json = $resp->success($data);
+        return $json;
+    }
 }

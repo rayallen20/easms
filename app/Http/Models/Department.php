@@ -151,9 +151,9 @@ class Department extends Model {
      * @return Collection 查询到的结果集
      */
     public function findNormals() {
-        $jobTitles = $this->where('status', self::STATUS['normal'])
+        $departments = $this->where('status', self::STATUS['normal'])
             ->orderBy('sort', 'asc')
             ->get();
-        return $jobTitles;
+        return $departments;
     }
 }

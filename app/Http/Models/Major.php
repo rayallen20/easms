@@ -144,4 +144,19 @@ class Major extends Model
         $orm->status = $status;
         return $orm->save();
     }
+
+    /**
+     * 本方法用于查询指定院系下所有状态为正常的专业信息
+     * @access public
+     * @param int $departmentId 院系id
+     * @author Roach<18410269837@163.com>
+     * @return Collection 查询到的结果集
+     */
+    public function findNormalsByDepartmentId($departmentId) {
+        $majors = $this->where('department_id', $departmentId)
+            ->where('status', self::STATUS['normal'])
+            ->orderBy('sort', 'asc')
+            ->get();
+        return $majors;
+    }
 }

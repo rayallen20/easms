@@ -213,4 +213,42 @@ class Major {
         $this->fill($majorOrm);
         return $code;
     }
+
+    /**
+     * 本方法用于展示指定院系下的全部可用专业信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $departmentId 指定的院系信息id
+     * @return array $result 本数组共2项内容:
+     * array<Major> $result['majors']:专业信息集合
+     * int $result['code']:错误码
+     */
+    public function showAll($departmentId) {
+        $result = [
+            'code' => 0,
+            'majors' => []
+        ];
+
+        $departmentBiz = new Department();
+        $code = $departmentBiz->exist($departmentId);
+        if ($code == Resp::DEPARTMENT_NOT_EXIST) {
+            $result['code'] = $code;
+            return $result;
+        }
+
+        if ($code == Resp::DEPARTMENT_HAS_BEEN_DELETE) {
+            $result['code'] = $code;
+            return $result;
+        }
+
+        $model = new \App\Http\Models\Major();
+        $majorCollection = $model->findNormalsByDepartmentId($departmentId);
+        for ($i = 0; $i <= count($majorCollection) - 1; $i++) {
+            $majorOrm = $majorCollection[$i];
+            $major = new Major();
+            $major->fill($majorOrm);
+            $result['majors'][$i] = $major;
+        }
+        return $result;
+    }
 }
