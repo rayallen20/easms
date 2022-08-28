@@ -360,4 +360,196 @@ class StudentController extends Controller {
         }
         return null;
     }
+
+    /**
+     * 本方法用于以列表形式查看学生信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * jwt string 用户jwt
+     * currentPage int 当前页数
+     * itemPerPage int 每页显示信息条数
+     * @return string $json 返回的JSON
+     */
+    public function list(Request $request) {
+        // step1. 接受参数 验证规则 start
+        $jwt = $request->input('user.jwt');
+        $currentPage = $request->input('pagination.currentPage');
+        $itemPerPage = $request->input('pagination.itemPerPage');
+
+        $params = [
+            'currentPage' => $currentPage,
+            'itemPerPage' => $itemPerPage,
+            'jwt' => $jwt,
+        ];
+
+        $rules = [
+            'currentPage' => 'required|int|min:1',
+            'itemPerPage' => 'required|int|min:1',
+            'jwt' => 'required|string',
+        ];
+
+        $exceptionMessages = [
+            'currentPage.required' => '当前页数不能为空',
+            'currentPage.int' => '当前页数必须为整型',
+            'currentPage.min' => '当前页数不得小于1',
+            'itemPerPage.required' => '每页显示条目不能为空',
+            'itemPerPage.int' => '每页显示条目必须为整型',
+            'itemPerPage.min' => '每页显示条目不得小于1',
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串'
+        ];
+
+        $resp = new Resp();
+
+        $lib = new Lib();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接受参数 验证规则 end
+
+        // step1. 接受参数 验证规则 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $studentBiz = new Student();
+        $result = $studentBiz->list($currentPage, $itemPerPage);
+        // step3. 处理逻辑 end
+
+        // step4. 封装返回值结构 start
+        $data = [
+            'user' => [
+                'role' => $userBiz->role->name
+            ],
+            'pagination' => $result['pagination'],
+            'students' => []
+        ];
+
+        for ($i = 0; $i <= count($result['students']) - 1; $i++) {
+            $student = $result['students'][$i];
+            $data['students'][$i] = [
+                'id' => $student->id,
+                'number' => $student->number,
+                'idNumber' => $student->idNumber,
+                'gender' => [
+                    'code' => $student->gender,
+                    'display' => self::confirmGender($student->gender),
+                ],
+                'nation' => [
+                    'id' => $student->nation->id,
+                    'name' => $student->nation->name,
+                ],
+                'examArea' => [
+                    'id' => $student->examArea->id,
+                    'name' => $student->examArea->name,
+                ],
+                'department' => [
+                    'id' => $student->department->id,
+                    'name' => $student->department->name,
+                ],
+                'major' => [
+                    'id' => $student->major->id,
+                    'name' => $student->major->name,
+                ],
+                'majorDirection' => $student->majorDirection,
+                'grade' => $student->grade,
+                'class' => $student->class,
+                'educationLevel' => [
+                    'code' => $student->educationLevel,
+                    'display' => self::confirmEducationLevel($student->educationLevel)
+                ],
+                'lengthOfSchool' => [
+                    'code' => $student->lengthOfSchool,
+                    'display' => self::confirmLengthOfSchool($student->lengthOfSchool)
+                ],
+                'degree' => [
+                    'code' => $student->degree,
+                    'display' => self::confirmDegree($student->degree)
+                ],
+                'createdTime' => $student->createdTime,
+                'updatedTime' => $student->updatedTime,
+            ];
+        }
+        // step4. 封装返回值结构 end
+
+        $json = $resp->success($data);
+        return $json;
+    }
+
+    /**
+     * 本方法用于根据性别编码确认性别
+     * @param int $genderCode 性别编码
+     * @return string|null $gender 存在编码对应的名称则返回名称 否则返回null
+     */
+    private function confirmGender($genderCode) {
+        foreach (Student::GENDER as $gender => $code) {
+            if ($genderCode == $code) {
+                return $gender;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 本方法用于根据培养层次编码确认培养层次
+     * @param int $educationLevelCode 培养层次编码
+     * @return string|null 存在培养层次编码对应的名称则返回名称 否则返回null
+     */
+    private function confirmEducationLevel($educationLevelCode) {
+        foreach (Student::EDUCATION_LEVEL as $educationLevel) {
+            if ($educationLevel['code'] == $educationLevelCode) {
+                return $educationLevel['display'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 本方法用于根据学制编码确认学制
+     * @param int $lengthOfSchoolCode 学制编码
+     * @return string|null 存在学制编码对应的名称则返回名称 否则返回null
+     */
+    private function confirmLengthOfSchool($lengthOfSchoolCode) {
+        foreach (Student::LENGTH_OF_SCHOOL as $lengthOfSchool) {
+            if ($lengthOfSchool['code'] == $lengthOfSchoolCode) {
+                return $lengthOfSchool['display'];
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 本方法用于根据学位编码确认学制
+     * @param int $degreeCode 学位编码
+     * @return string|null 存在学位编码对应的名称则返回名称 否则返回null
+     */
+    private function confirmDegree($degreeCode) {
+        foreach (Student::DEGREE as $degree) {
+            if ($degree['code'] == $degreeCode) {
+                return $degree['display'];
+            }
+        }
+        return null;
+    }
 }

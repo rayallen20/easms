@@ -407,7 +407,7 @@ class Teacher {
      * 本方法用于根据Teacher表的ORM填充Biz层的Teacher对象
      * @access public
      * @author Roach<18410269837@163.com>
-     * @param \App\Http\Models\Teacher $model 院系信息ORM
+     * @param \App\Http\Models\Teacher $model 教职工信息ORM
      * @return void
      */
     public function fill($model) {

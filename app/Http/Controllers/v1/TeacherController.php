@@ -567,7 +567,9 @@ class TeacherController extends Controller {
 
     /**
      * 本方法用于根据性别编码确认性别
-    */
+     * @param int $genderCode 性别编码
+     * @return string|null $gender 存在编码对应的名称则返回名称 否则返回null
+     */
     private function confirmGender($genderCode) {
         foreach (Teacher::GENDER as $gender => $code) {
             if ($genderCode == $code) {
@@ -577,6 +579,11 @@ class TeacherController extends Controller {
         return null;
     }
 
+    /**
+     * 本方法用于根据任职状态编码确认任职状态
+     * @param int $officeHoldingStatus 任职状态编码
+     * @return string|null 存在任职状态编码的名称则返回名称 否则返回null
+     */
     private function confirmOfficeHolding($officeHoldingStatus) {
         foreach (Teacher::OFFICE_HOLDING_STATUS as $officeHolding) {
             if ($officeHolding['code'] == $officeHoldingStatus) {
@@ -586,6 +593,11 @@ class TeacherController extends Controller {
         return null;
     }
 
+    /**
+     * 本方法用于根据学历编码确认学历
+     * @param int $educationBackgroundCode 学历编码
+     * @return string|null 存在学历编码的名称则返回名称 否则返回null
+     */
     private function confirmEducationBackground($educationBackgroundCode) {
         foreach (Teacher::EDUCATION_BACKGROUNDS as $educationBackground) {
             if ($educationBackground['code'] == $educationBackgroundCode) {
@@ -595,6 +607,11 @@ class TeacherController extends Controller {
         return null;
     }
 
+    /**
+     * 本方法用于根据学位编码确认学位
+     * @param int $qualificationCode 学位编码
+     * @return string|null 存在学位编码的名称则返回名称 否则返回null
+     */
     private function confirmQualification($qualificationCode) {
         foreach (Teacher::QUALIFICATIONS as $qualification) {
             if ($qualification['code'] == $qualificationCode) {
@@ -604,6 +621,11 @@ class TeacherController extends Controller {
         return null;
     }
 
+    /**
+     * 本方法用于根据学缘编码确认学缘
+     * @param int $sourceCode 学缘编码
+     * @return string|null 存在学缘编码的名称则返回名称 否则返回null
+     */
     private function confirmSource($sourceCode) {
         foreach (Teacher::SOURCES as $source) {
             if ($source['code'] == $sourceCode) {

@@ -1,6 +1,7 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Pagination;
 use App\Lib\Resp;
 
 class Student {
@@ -151,6 +152,16 @@ class Student {
     public $sort;
 
     /**
+     * @var string $createdTime 学生创建时间
+     */
+    public $createdTime;
+
+    /**
+     * @var string $updatedTime 学生修改时间
+     */
+    public $updatedTime;
+
+    /**
      * 本方法用于创建学生
      * @access public
      * @author Roach<18410269837@163.com>
@@ -295,5 +306,71 @@ class Student {
             }
         }
         return false;
+    }
+
+    /**
+     * 本方法用于列表展示学生信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $currentPage 当前页数
+     * @param int $itemPerPage 每页显示信息条数
+     * @return array $result 本数组共3项内容:
+     * array<Student> $result['students']:学生信息集合
+     * App\Lib\Pagination $result['pagination']:分页器对象
+     * int $result['code']:错误码
+     */
+    public function list($currentPage, $itemPerPage) {
+        $result = [
+            'students' => [],
+            'pagination' => null,
+            'code' => 0
+        ];
+
+        $pagination = new Pagination($currentPage, $itemPerPage);
+        $offset = $pagination->calcOffset();
+
+        $model = new \App\Http\Models\Student();
+        $studentCollection = $model->findNormalStudents($offset, $itemPerPage);
+        for ($i = 0; $i <= count($studentCollection) - 1; $i++) {
+            $studentOrm = $studentCollection[$i];
+            $student = new Student();
+            $student->fill($studentOrm);
+            $result['students'][$i] = $student;
+        }
+
+        $totalStudentNum = $model->countNormalStudents();
+        $pagination->calcTotalPage($totalStudentNum);
+        $result['pagination'] = $pagination;
+        return $result;
+    }
+
+    /**
+     * 本方法用于根据Student表的ORM填充Biz层的Student对象
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param \App\Http\Models\Student $model 学生信息ORM
+     * @return void
+     */
+    public function fill($model) {
+        $this->id = $model->id;
+        $this->number = $model->number;
+        $this->idNumber= $model->id_number;
+        $this->gender = $model->gender;
+        $this->nation = new Nation();
+        $this->nation->fill($model->nation);
+        $this->examArea = new ExamArea();
+        $this->examArea->fill($model->exam_area);
+        $this->department = new Department();
+        $this->department->fill($model->department);
+        $this->major = new Major();
+        $this->major->fill($model->major);
+        $this->majorDirection = $model->major_direction;
+        $this->grade = $model->grade;
+        $this->class = $model->class;
+        $this->educationLevel = $model->education_level_code;
+        $this->lengthOfSchool = $model->length_of_school_code;
+        $this->degree = $model->degree_code;
+        $this->createdTime = explode('.', $model->created_time)[0];
+        $this->updatedTime = explode('.', $model->updated_time)[0];
     }
 }

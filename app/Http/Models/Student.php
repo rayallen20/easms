@@ -1,7 +1,9 @@
 <?php
 namespace App\Http\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Student extends Model {
     /**
@@ -43,6 +45,38 @@ class Student extends Model {
     protected $dateFormat = 'Y-m-d H:i:s';
 
     /**
+     * 本方法用于定义本表(student表)与nation表之间通过student.nation_id和nation.id建立的1对1关系
+     * @return HasOne
+     */
+    public function nation() {
+        return $this->hasOne('App\Http\Models\Nation', 'id', 'nation_id');
+    }
+
+    /**
+     * 本方法用于定义本表(student表)与exam_area表之间通过student.exam_area_id和exam_area.id建立的1对1关系
+     * @return HasOne
+     */
+    public function exam_area() {
+        return $this->hasOne('App\Http\Models\ExamArea', 'id', 'exam_area_id');
+    }
+
+    /**
+     * 本方法用于定义本表(student表)与department表之间通过student.department_id和department.id建立的1对1关系
+     * @return HasOne
+     */
+    public function department() {
+        return $this->hasOne('App\Http\Models\Department', 'id', 'department_id');
+    }
+
+    /**
+     * 本方法用于定义本表(student表)与major表之间通过student.major_id和major.id建立的1对1关系
+     * @return HasOne
+     */
+    public function major() {
+        return $this->hasOne('App\Http\Models\Major', 'id', 'major_id');
+    }
+
+    /**
      * 本方法用于创建1条Student表中的信息
      * @access public
      * @author Roach<18410269837@163.com>
@@ -82,5 +116,32 @@ class Student extends Model {
             return $maxId;
         }
         return $maxId;
+    }
+
+    /**
+     * 本方法用于分页查询状态正常的学生信息集合 结果集按sort字段值升序排序
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $offset 偏移量
+     * @param int $limit 每页信息数量
+     * @return Collection 查询到的结果集
+     */
+    public function findNormalStudents($offset, $limit) {
+        $departments = $this->where('status', self::STATUS['normal'])
+            ->orderBy('sort', 'asc')
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+        return $departments;
+    }
+
+    /**
+     * 本方法用于计算状态正常的学生信息的总条数
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int 信息总条数
+     */
+    public function countNormalStudents() {
+        return $this->where('status', self::STATUS['normal'])->count();
     }
 }
