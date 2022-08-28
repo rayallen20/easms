@@ -828,6 +828,7 @@ class TeacherController extends Controller {
         }
         // step4. 记录日志 end
 
+        // step5. 封装返回值结构 start
         $data = [
             'user' => [
                 'role' => $userBiz->role->name,

@@ -373,4 +373,119 @@ class Student {
         $this->createdTime = explode('.', $model->created_time)[0];
         $this->updatedTime = explode('.', $model->updated_time)[0];
     }
+
+    /**
+     * 本方法用于创建学生
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 学生id
+     * @param string $number 学生学号
+     * @param string $name 学生姓名
+     * @param string $idNumber 学生身份证号
+     * @param int $genderCode 学生性别编码
+     * @param int $nationId 学生民族id
+     * @param int $examAreaId 学生所在考区id
+     * @param int $departmentId 学生所属院系id
+     * @param int $majorId 学生所属专业id
+     * @param string $majorDirection 学生专业方向
+     * @param string $grade 学生年级
+     * @param string  $class 学生班级
+     * @param int $educationLevelCode 学生培养层次编码
+     * @param int $lengthOfSchoolCode 学生学制编码
+     * @param int $degreeCode 学生学位编码
+     * @return int $code 操作状态码 0表示成功 操作失败则返回对应失败原因的状态码
+     */
+    public function update($id, $number, $name, $idNumber, $genderCode, $nationId, $examAreaId,
+                           $departmentId, $majorId, $majorDirection, $grade, $class,
+                           $educationLevelCode, $lengthOfSchoolCode, $degreeCode) {
+        $code = 0;
+        $model = new \App\Http\Models\Student();
+        $studentOrm = $model->findById($id);
+        if ($studentOrm == null) {
+            $code = Resp::STUDENT_NOT_EXIST;
+            return $code;
+        }
+
+        if ($studentOrm->status == \App\Http\Models\Student::STATUS['delete']) {
+            $code = Resp::STUDENT_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        // 确认培养层次编码是否存在
+        if (!self::existEducationLevel($educationLevelCode)) {
+            $code = Resp::EDUCATION_LEVEL_NOT_EXIST;
+            return $code;
+        }
+        $this->educationLevel = $educationLevelCode;
+
+        // 确认学制是否存在
+        if (!self::existLengthOfSchool($lengthOfSchoolCode)) {
+            $code = Resp::LENGTH_OF_SCHOOL_NOT_EXIST;
+            return $code;
+        }
+        $this->lengthOfSchool = $lengthOfSchoolCode;
+
+        // 确认学位是否存在
+        if (!self::existDegree($degreeCode)) {
+            $code = Resp::DEGREE_NOT_EXIST;
+            return $code;
+        }
+        $this->degree = $degreeCode;
+
+        // 确认院系id是否存在
+        $departmentBiz = new Department();
+        $code = $departmentBiz->exist($departmentId);
+        if ($code != 0) {
+            return $code;
+        }
+
+        // 确认专业id是否存在
+        $majorBiz = new Major();
+        $code = $majorBiz->exist($majorId);
+        if ($code != 0) {
+            return $code;
+        }
+
+        // 确认专业是否隶属于指定院系
+        if ($majorBiz->department->id != $departmentBiz->id) {
+            $code = Resp::MAJOR_NOT_BELONGS_TO_DEPARTMENT;
+            return $code;
+        }
+        $this->department = $departmentBiz;
+        $this->major = $majorBiz;
+
+        // 确认民族是否存在
+        $nationBiz = new Nation();
+        $code = $nationBiz->exist($nationId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->nation = $nationBiz;
+
+        // 确认考区是否存在
+        $examAreaBiz = new ExamArea();
+        $code = $examAreaBiz->exist($examAreaId);
+        if ($code != 0) {
+            return $code;
+        }
+        $this->examArea = $examAreaBiz;
+
+        $this->number = $number;
+        $this->name = $name;
+        $this->gender = $genderCode;
+        $this->idNumber = $idNumber;
+        $this->majorDirection = $majorDirection;
+        $this->grade = $grade;
+        $this->class = $class;
+
+        $result = $model->updateStudent($studentOrm, $this);
+
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+
+        $this->fill($studentOrm);
+        return $code;
+    }
 }

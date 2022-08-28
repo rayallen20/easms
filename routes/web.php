@@ -50,3 +50,4 @@ Route::get('v1/student/show/lengthOfSchool', 'v1\StudentController@showLengthOfS
 Route::get('v1/student/show/degree', 'v1\StudentController@showDegree');
 Route::post('v1/student/create', 'v1\StudentController@create');
 Route::post('v1/student/list', 'v1\StudentController@list');
+Route::post('v1/student/update', 'v1\StudentController@update');

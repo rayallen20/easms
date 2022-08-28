@@ -144,4 +144,34 @@ class Student extends Model {
     public function countNormalStudents() {
         return $this->where('status', self::STATUS['normal'])->count();
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于创建1条Student表中的信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Student $orm 要更新的orm
+     * @param \App\Biz\Student $student 业务层Student对象 表示待创建的学生
+     * @return bool true表示更新成功 false表示更新失败
+     */
+    public function updateStudent($orm, $student) {
+        $orm->number = $student->number;
+        $orm->id_number = $student->idNumber;
+        $orm->name = $student->name;
+        $orm->gender = (string)$student->gender;
+        $orm->nation_id = $student->nation->id;
+        $orm->exam_area_id = $student->examArea->id;
+        $orm->department_id = $student->department->id;
+        $orm->major_id = $student->major->id;
+        $orm->major_direction = $student->majorDirection;
+        $orm->grade = $student->grade;
+        $orm->class = $student->class;
+        $orm->education_level_code = $student->educationLevel;
+        $orm->length_of_school_code = $student->lengthOfSchool;
+        $orm->degree_code = $student->degree;
+        return $orm->save();
+    }
 }

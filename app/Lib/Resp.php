@@ -202,6 +202,16 @@ class Resp {
      */
     const EXAM_AREA_HAS_BEEN_DELETE = 10039;
 
+    /**
+     * @const int STUDENT_NOT_EXIST 本状态码表示学生信息不存在
+     */
+    const STUDENT_NOT_EXIST = 10040;
+
+    /**
+     * @const int STUDENT_HAS_BEEN_DELETE 本状态码表示学生信息已经被删除
+     */
+    const STUDENT_HAS_BEEN_DELETE = 10041;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -242,6 +252,8 @@ class Resp {
         self::DEGREE_NOT_EXIST => '学位信息不存在',
         self::EXAM_AREA_NOT_EXIST => '考区信息不存在',
         self::EXAM_AREA_HAS_BEEN_DELETE => '考区已被删除,无法执行当前操作',
+        self::STUDENT_NOT_EXIST => '学生信息不存在',
+        self::STUDENT_HAS_BEEN_DELETE => '学生已被删除,无法执行当前操作',
     ];
 
     /**
@@ -706,6 +718,28 @@ class Resp {
      */
     public function examAreaHasBeenDeleted($data) {
         return self::generate(self::EXAM_AREA_HAS_BEEN_DELETE, self::MESSAGE[self::EXAM_AREA_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在学生信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function studentNotExist($data) {
+        return self::generate(self::STUDENT_NOT_EXIST, self::MESSAGE[self::STUDENT_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在学生信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function studentHasBeenDeleted($data) {
+        return self::generate(self::STUDENT_HAS_BEEN_DELETE, self::MESSAGE[self::STUDENT_HAS_BEEN_DELETE], $data);
     }
 }
 
