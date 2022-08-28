@@ -143,4 +143,17 @@ class Department extends Model {
         $orm->status = $status;
         return $orm->save();
     }
+
+    /**
+     * 本方法用于查询所有状态为正常的院系信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return Collection 查询到的结果集
+     */
+    public function findNormals() {
+        $jobTitles = $this->where('status', self::STATUS['normal'])
+            ->orderBy('sort', 'asc')
+            ->get();
+        return $jobTitles;
+    }
 }

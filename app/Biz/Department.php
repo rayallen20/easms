@@ -214,4 +214,23 @@ class Department {
         $this->fill($departmentOrm);
         return $code;
     }
+
+    /**
+     * 本方法用于展示全部可用院系信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return array<Department> $departments
+     */
+    public function showAll() {
+        $departments = [];
+        $model = new \App\Http\Models\Department();
+        $departmentCollection = $model->findNormals();
+        for ($i = 0; $i <= count($departmentCollection) - 1; $i++) {
+            $departmentOrm = $departmentCollection[$i];
+            $department = new Department();
+            $department->fill($departmentOrm);
+            $departments[$i] = $department;
+        }
+        return $departments;
+    }
 }

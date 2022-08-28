@@ -489,4 +489,26 @@ class DepartmentController extends Controller {
         $json = $resp->success([]);
         return $json;
     }
+
+    /**
+     * 本方法用于显示所有院系信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return string $json
+     */
+    public function showAll() {
+        $departmentBiz = new Department();
+        $departmentCollection = $departmentBiz->showAll();
+        $data = [];
+        for ($i = 0; $i <= count($departmentCollection) - 1; $i++) {
+            $department = [
+                'id' => $departmentCollection[$i]->id,
+                'name' => $departmentCollection[$i]->name,
+            ];
+            $data[$i] = $department;
+        }
+        $resp = new Resp();
+        $json = $resp->success($data);
+        return $json;
+    }
 }
