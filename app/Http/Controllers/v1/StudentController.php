@@ -555,7 +555,7 @@ class StudentController extends Controller {
     }
 
     /**
-     * 本方法用于创建教职工操作
+     * 本方法用于修改教职工操作
      * @access public
      * @author Roach<18410269837@163.com>
      * @param Request $request 请求组件

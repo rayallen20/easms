@@ -196,4 +196,60 @@ class Lib {
         }
         return false;
     }
+
+    /**
+     * 本方法用于判定一个字符串表示的日期是否早于另一个字符串表示的日期
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $earlier 较早的日期
+     * @param string $later 较晚的日期
+     * @return bool true表示较早的日期早于较晚的日期 false表示较早的日期晚于较晚的日期
+    */
+    public function isEarly($earlier, $later) {
+        $earlierYmd = date_parse_from_format('Y-m-d', $earlier);
+        $earlierYear = $earlierYmd['year'];
+        $earlierMonth = $earlierYmd['month'];
+        $earlierDay = $earlierYmd['day'];
+        $earlierTime = mktime(0, 0, 0, $earlierMonth, $earlierDay, $earlierYear);
+
+        $laterYmd = date_parse_from_format('Y-m-d', $later);
+        $laterYear = $laterYmd['year'];
+        $laterMonth = $laterYmd['month'];
+        $laterDay = $laterYmd['day'];
+        $laterTime = mktime(0, 0, 0, $laterMonth, $laterDay, $laterYear);
+
+        if ($earlierTime < $laterTime) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 本方法用于判定一个字符串表示的日期是否早于当天
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $date 字符串表示的日期
+     * @return bool true表示该日期早于当天 false表示该日期晚于当天
+     */
+    public function isEarlyToday($date) {
+        $todayDate = date('Y-m-d');
+        $todayYmd = date_parse_from_format('Y-m-d', $todayDate);
+        $todayYear = $todayYmd['year'];
+        $todayMonth = $todayYmd['month'];
+        $todayDay = $todayYmd['day'];
+        $todayTime = mktime(0, 0, 0, $todayMonth, $todayDay, $todayYear);
+
+        $dateYmd = date_parse_from_format('Y-m-d', $date);
+        $dateYear = $dateYmd['year'];
+        $dateMonth = $dateYmd['month'];
+        $dateDay = $dateYmd['day'];
+        $dateTime = mktime(0, 0, 0, $dateMonth, $dateDay, $dateYear);
+
+        if ($dateTime < $todayTime) {
+            return true;
+        }
+
+        return false;
+    }
 }

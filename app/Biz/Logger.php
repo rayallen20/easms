@@ -38,6 +38,7 @@ class Logger {
         'createStudent' => '创建学生',
         'updateStudent' => '更新学生信息',
         'deleteStudent' => '删除学生信息',
+        'createProbe' => '创建调研模板',
     ];
 
     /**
@@ -427,6 +428,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['student'];
         $this->operateType = self::OPERATIONS['deleteStudent'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录创建调研模板操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logCreateProbe(){
+        $code = 0;
+        $this->module = self::MODULES['probe'];
+        $this->operateType = self::OPERATIONS['createProbe'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

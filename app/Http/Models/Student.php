@@ -17,7 +17,7 @@ class Student extends Model {
     const UPDATED_AT = 'updated_time';
 
     /**
-     * @const array USER_STATUS 表示学科信息状态的数组 normal:正常 delete:删除
+     * @const array USER_STATUS 表示学生信息状态的数组 normal:正常 delete:删除
      */
     const STATUS = [
         'normal' => 'normal',

@@ -1,0 +1,124 @@
+<?php
+namespace App\Http\Controllers\v1;
+
+use App\Biz\Logger;
+use App\Biz\ProbeTemplate;
+use App\Biz\User;
+use App\Http\Controllers\Controller;
+use App\Lib\Lib;
+use App\Lib\Resp;
+use Illuminate\Http\Request;
+
+class ProbeController extends Controller {
+    /**
+     * 本方法用于创建调研模板操作
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * user.jwt string 用户jwt(必填)
+     * probe.name 调研模板名称
+     * probe.startDate 调研模板开始作答时间
+     * probe.endDate 调研模板结束作答时间
+     * @return string $json 返回至前端的json
+     */
+    public function create(Request $request) {
+        // step1. 接收参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $name = $request->input('probe.name');
+        $startDate = $request->input('probe.startDate');
+        $endDate = $request->input('probe.endDate');
+
+        $params = [
+            'jwt' => $jwt,
+            'name' => $name,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+            'name' => 'required|string',
+            'startDate' => 'required|date|date_format:Y-m-d',
+            'endDate' => 'required|date|date_format:Y-m-d',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'name.required' => '调研模板名称不能为空',
+            'name.string' => '调研模板名称内容必须为字符串',
+            'startDate.required' => '调研模板开始日期不能为空',
+            'startDate.date' => '调研模板开始日期不是有效日期',
+            'startDate.date_format' => '调研模板开始日期必须为年-月-日格式字符串',
+            'endDate.required' => '调研模板结束日期不能为空',
+            'endDate.date' => '调研模板结束日期不是有效日期',
+            'endDate.date_format' => '调研模板结束日期必须为年-月-日格式字符串',
+        ];
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+
+        $isEarly = $lib->isEarly($startDate, $endDate);
+        if (!$isEarly) {
+            $json = $resp->paramInvalid('开始时间必须晚于结束时间', []);
+            return $json;
+        }
+
+        $isEndDateEarly = $lib->isEarlyToday($endDate);
+        if ($isEndDateEarly) {
+            $json = $resp->paramInvalid('结束时间不得早于当天', []);
+            return $json;
+        }
+        // step1. 接收参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $resp = new Resp();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $probeBiz = new ProbeTemplate();
+        $code = $probeBiz->create($name, $startDate, $endDate);
+        if ($code == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logCreateProbe();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+        $json = $resp->success([]);
+        return $json;
+    }
+}
