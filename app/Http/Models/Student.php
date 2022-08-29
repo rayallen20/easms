@@ -150,7 +150,7 @@ class Student extends Model {
     }
 
     /**
-     * 本方法用于创建1条Student表中的信息
+     * 本方法用于更新1条Student表中的信息
      * @access public
      * @author Roach<18410269837@163.com>
      * @param Student $orm 要更新的orm

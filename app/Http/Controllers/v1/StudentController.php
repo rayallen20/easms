@@ -659,7 +659,7 @@ class StudentController extends Controller {
         }
 
         if ($code == Resp::STUDENT_HAS_BEEN_DELETE) {
-            $json = $resp->subjectHasBeenDeleted([]);
+            $json = $resp->studentHasBeenDeleted([]);
             return $json;
         }
 
@@ -720,6 +720,11 @@ class StudentController extends Controller {
 
         if ($code == Resp::EXAM_AREA_HAS_BEEN_DELETE) {
             $json = $resp->examAreaHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
             return $json;
         }
         // step3. 处理逻辑 end

@@ -129,4 +129,43 @@ class ProbeTemplate {
         $this->createdTime = explode('.', $model->created_time)[0];
         $this->updatedTime = explode('.', $model->updated_time)[0];
     }
+
+    /**
+     * 本方法用于更新调研模板信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 调研模板id
+     * @param string $name 调研问卷名称
+     * @param string $startDate 调研问卷开始作答日期
+     * @param string $endDate 调研问卷结束作答日期
+     * @return int $code 操作状态码 0表示成功 操作失败则返回对应失败原因的状态码
+     */
+    public function update($id, $name, $startDate, $endDate) {
+        $code = 0;
+        $model = new \App\Http\Models\ProbeTemplate();
+        $probeOrm = $model->findById($id);
+        if ($probeOrm == null) {
+            $code = Resp::PROBE_NOT_EXIST;
+            return $code;
+        }
+
+        if ($probeOrm->status == \App\Http\Models\ProbeTemplate::STATUS['delete']) {
+            $code = Resp::PROBE_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->name = $name;
+        $this->startDate = $startDate;
+        $this->endDate = $endDate;
+
+        $result = $model->updateProbe($probeOrm, $this);
+
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+
+        $this->fill($probeOrm);
+        return $code;
+    }
 }

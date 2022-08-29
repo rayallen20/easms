@@ -212,6 +212,26 @@ class Resp {
      */
     const STUDENT_HAS_BEEN_DELETE = 10041;
 
+    /**
+     * @const PROBE_NOT_EXIST 本状态码表示调研模板信息不存在
+    */
+    const PROBE_NOT_EXIST = 10042;
+
+    /**
+     * @const int PROBE_HAS_BEEN_DELETE 本状态码表示调研模板信息已经被删除
+     */
+    const PROBE_HAS_BEEN_DELETE = 10043;
+
+    /**
+     * @const QUESTION_NOT_EXIST 本状态码表示问题信息不存在
+     */
+    const QUESTION_NOT_EXIST = 10044;
+
+    /**
+     * @const int QUESTION_HAS_BEEN_DELETE 本状态码表示问题信息已经被删除
+     */
+    const QUESTION_HAS_BEEN_DELETE = 10045;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -254,6 +274,10 @@ class Resp {
         self::EXAM_AREA_HAS_BEEN_DELETE => '考区已被删除,无法执行当前操作',
         self::STUDENT_NOT_EXIST => '学生信息不存在',
         self::STUDENT_HAS_BEEN_DELETE => '学生已被删除,无法执行当前操作',
+        self::PROBE_NOT_EXIST => '调研模板信息不存在',
+        self::PROBE_HAS_BEEN_DELETE => '调研模板已被删除,无法执行当前操作',
+        self::QUESTION_NOT_EXIST => '问题信息不存在',
+        self::QUESTION_HAS_BEEN_DELETE => '问题已被删除,无法执行当前操作',
     ];
 
     /**
@@ -740,6 +764,50 @@ class Resp {
      */
     public function studentHasBeenDeleted($data) {
         return self::generate(self::STUDENT_HAS_BEEN_DELETE, self::MESSAGE[self::STUDENT_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在调研模板信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function probeNotExist($data) {
+        return self::generate(self::PROBE_NOT_EXIST, self::MESSAGE[self::PROBE_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在调研模板信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function probeHasBeenDeleted($data) {
+        return self::generate(self::PROBE_HAS_BEEN_DELETE, self::MESSAGE[self::PROBE_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在问题信息不存在时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function questionNotExist($data) {
+        return self::generate(self::QUESTION_NOT_EXIST, self::MESSAGE[self::QUESTION_NOT_EXIST], $data);
+    }
+
+    /**
+     * 本方法用于生成在问题信息已经被删除时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function questionHasBeenDeleted($data) {
+        return self::generate(self::QUESTION_HAS_BEEN_DELETE, self::MESSAGE[self::QUESTION_HAS_BEEN_DELETE], $data);
     }
 }
 

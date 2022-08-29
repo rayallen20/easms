@@ -375,7 +375,7 @@ class Student {
     }
 
     /**
-     * 本方法用于创建学生
+     * 本方法用于更新学生
      * @access public
      * @author Roach<18410269837@163.com>
      * @param int $id 学生id

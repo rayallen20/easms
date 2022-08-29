@@ -102,4 +102,23 @@ class ProbeTemplate extends Model {
     public function countNormalProbes() {
         return $this->where('status', self::STATUS['normal'])->count();
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于更新1条probe_template表中的信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param ProbeTemplate $orm 要更新的orm
+     * @param \App\Biz\ProbeTemplate $probe 业务层ProbeTemplate对象 表示待更新的调研问卷模板
+     * @return bool true表示创建成功 false表示创建失败
+     */
+    public function updateProbe($orm, $probe) {
+        $orm->name = $probe->name;
+        $orm->start_date = $probe->startDate;
+        $orm->end_date = $probe->endDate;
+        return $orm->save();
+    }
 }
