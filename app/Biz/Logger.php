@@ -40,6 +40,7 @@ class Logger {
         'deleteStudent' => '删除学生信息',
         'createProbe' => '创建调研模板',
         'updateProbe' => '更新调研模板',
+        'deleteProbe' => '删除调研模板',
     ];
 
     /**
@@ -469,6 +470,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['probe'];
         $this->operateType = self::OPERATIONS['updateProbe'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录删除调研模板操作操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logDeleteProbe(){
+        $code = 0;
+        $this->module = self::MODULES['probe'];
+        $this->operateType = self::OPERATIONS['deleteProbe'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

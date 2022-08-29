@@ -121,4 +121,17 @@ class ProbeTemplate extends Model {
         $orm->end_date = $probe->endDate;
         return $orm->save();
     }
+
+    /**
+     * 本方法用于更新1条调研模板信息的状态
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param ProbeTemplate $orm 要更新的orm
+     * @param string $status 更新后的status字段值
+     * @return bool 更新结果
+     */
+    public function updateStatus($orm, $status) {
+        $orm->status = $status;
+        return $orm->save();
+    }
 }

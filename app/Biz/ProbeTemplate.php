@@ -168,4 +168,33 @@ class ProbeTemplate {
         $this->fill($probeOrm);
         return $code;
     }
+
+    /**
+     * 本方法用于删除调研模板
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待删除调研模板的学生id
+     * @return int $code 错误码 若操作无错误则返回0
+     */
+    public function delete($id) {
+        $code = 0;
+        $model = new \App\Http\Models\ProbeTemplate();
+        $probeOrm = $model->findById($id);
+        if ($probeOrm == null) {
+            $code = Resp::PROBE_NOT_EXIST;
+            return $code;
+        }
+
+        if ($probeOrm->status == \App\Http\Models\ProbeTemplate::STATUS['delete']) {
+            $code = Resp::PROBE_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $result = $model->updateStatus($probeOrm, \App\Http\Models\ProbeTemplate::STATUS['delete']);
+        if (!$result) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
 }
