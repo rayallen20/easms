@@ -55,3 +55,4 @@ Route::post('v1/student/delete', 'v1\StudentController@delete');
 Route::get('v1/department/show/all', 'v1\DepartmentController@showAll');
 Route::get('v1/major/show/all', 'v1\MajorController@showAll');
 Route::post('v1/probe/create', 'v1\ProbeController@create');
+Route::post('v1/probe/list', 'v1\ProbeController@list');

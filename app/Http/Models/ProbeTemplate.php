@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class ProbeTemplate extends Model {
@@ -53,6 +54,8 @@ class ProbeTemplate extends Model {
         $this->name = $probe->name;
         $this->start_date = $probe->startDate;
         $this->end_date = $probe->endDate;
+        $this->topic_number = $probe->topicNumber;
+        $this->answerer_num = $probe->answererNum;
         $this->status = self::STATUS['normal'];
         $this->sort = $this->findMaxId() + 1;
         return $this->save();
@@ -71,5 +74,32 @@ class ProbeTemplate extends Model {
             return $maxId;
         }
         return $maxId;
+    }
+
+    /**
+     * 本方法用于分页查询状态正常的调研模板信息集合 结果集按sort字段值升序排序
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $offset 偏移量
+     * @param int $limit 每页信息数量
+     * @return Collection 查询到的结果集
+     */
+    public function findNormalProbes($offset, $limit) {
+        $probes = $this->where('status', self::STATUS['normal'])
+            ->orderBy('sort', 'asc')
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+        return $probes;
+    }
+
+    /**
+     * 本方法用于计算状态正常的调研模板信息的总条数
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int 信息总条数
+     */
+    public function countNormalProbes() {
+        return $this->where('status', self::STATUS['normal'])->count();
     }
 }

@@ -63,17 +63,17 @@ class ProbeController extends Controller {
             return $json;
         }
 
-        $isEarly = $lib->isEarly($startDate, $endDate);
-        if (!$isEarly) {
-            $json = $resp->paramInvalid('开始时间必须晚于结束时间', []);
-            return $json;
-        }
-
-        $isEndDateEarly = $lib->isEarlyToday($endDate);
-        if ($isEndDateEarly) {
-            $json = $resp->paramInvalid('结束时间不得早于当天', []);
-            return $json;
-        }
+//        $isEarly = $lib->isEarly($startDate, $endDate);
+//        if (!$isEarly) {
+//            $json = $resp->paramInvalid('开始时间必须晚于结束时间', []);
+//            return $json;
+//        }
+//
+//        $isEndDateEarly = $lib->isEarlyToday($endDate);
+//        if ($isEndDateEarly) {
+//            $json = $resp->paramInvalid('结束时间不得早于当天', []);
+//            return $json;
+//        }
         // step1. 接收参数并校验 end
 
         // step2. 鉴权 start
@@ -119,6 +119,108 @@ class ProbeController extends Controller {
         }
         // step4. 记录日志 end
         $json = $resp->success([]);
+        return $json;
+    }
+
+    /**
+     * 本方法用于以列表形式查看调研模板信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * jwt string 用户jwt
+     * currentPage int 当前页数
+     * itemPerPage int 每页显示信息条数
+     * @return string $json 返回的JSON
+     */
+    public function list(Request $request) {
+        // step1. 接受参数 验证规则 start
+        $jwt = $request->input('user.jwt');
+        $currentPage = $request->input('pagination.currentPage');
+        $itemPerPage = $request->input('pagination.itemPerPage');
+
+        $params = [
+            'currentPage' => $currentPage,
+            'itemPerPage' => $itemPerPage,
+            'jwt' => $jwt,
+        ];
+
+        $rules = [
+            'currentPage' => 'required|int|min:1',
+            'itemPerPage' => 'required|int|min:1',
+            'jwt' => 'required|string',
+        ];
+
+        $exceptionMessages = [
+            'currentPage.required' => '当前页数不能为空',
+            'currentPage.int' => '当前页数必须为整型',
+            'currentPage.min' => '当前页数不得小于1',
+            'itemPerPage.required' => '每页显示条目不能为空',
+            'itemPerPage.int' => '每页显示条目必须为整型',
+            'itemPerPage.min' => '每页显示条目不得小于1',
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串'
+        ];
+
+        $resp = new Resp();
+
+        $lib = new Lib();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接受参数 验证规则 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $probeBiz = new ProbeTemplate();
+        $result = $probeBiz->list($currentPage, $itemPerPage);
+        // step3. 处理逻辑 end
+
+        // step4. 封装返回值结构 start
+        $data = [
+            'user' => [
+                'role' => $userBiz->role->name
+            ],
+            'pagination' => $result['pagination'],
+            'probes' => []
+        ];
+
+       for ($i = 0; $i <= count($result['probes']) - 1; $i++) {
+           $probe = $result['probes'][$i];
+           $data['probes'][$i] = [
+               'id' => $probe->id,
+               'name' => $probe->name,
+               'startDate' => $probe->startDate,
+               'endDate' => $probe->endDate,
+               'topicNumber' => $probe->topicNumber,
+               'sort' => $probe->sort,
+               'createdTime' => $probe->createdTime,
+               'updatedTime' => $probe->updatedTime,
+           ];
+       }
+        // step4. 封装返回值结构 end
+
+        $json = $resp->success($data);
         return $json;
     }
 }
