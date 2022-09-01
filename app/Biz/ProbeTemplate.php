@@ -1,6 +1,12 @@
 <?php
 namespace App\Biz;
 
+use App\Biz\Question\ChoiceQuestion\MultipleChoice;
+use App\Biz\Question\ChoiceQuestion\SingleChoice;
+use App\Biz\Question\ShortQuestion\ShortQuestion;
+use App\Http\Models\MultipleChoiceStem;
+use App\Http\Models\ShortStem;
+use App\Http\Models\SingleChoiceStem;
 use App\Lib\Pagination;
 use App\Lib\Resp;
 
@@ -49,6 +55,11 @@ class ProbeTemplate {
      * @var string $updateTime 调研问卷修改时间
      */
     public $updatedTime;
+
+    /**
+     * @var \App\Http\Models\ProbeTemplate $orm 调研模板ORM
+    */
+    private $orm;
 
     /**
      * 本方法用于创建学生
@@ -128,6 +139,7 @@ class ProbeTemplate {
         $this->sort = $model->sort;
         $this->createdTime = explode('.', $model->created_time)[0];
         $this->updatedTime = explode('.', $model->updated_time)[0];
+        $this->orm = $model;
     }
 
     /**
@@ -196,5 +208,66 @@ class ProbeTemplate {
             return $code;
         }
         return $code;
+    }
+
+    /**
+     * 本方法用于根据id字段值确认调研模板是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 待确认调研模板的调研模板id
+     * @return int $code 存在返回0 否则返回表示院系信息不存在的错误码
+     */
+    public function exist($id) {
+        $code = 0;
+        $model = new \App\Http\Models\ProbeTemplate();
+        $probeOrm = $model->findById($id);
+        if ($probeOrm == null) {
+            $code = Resp::PROBE_NOT_EXIST;
+            return $code;
+        }
+
+        if ($probeOrm->status == \App\Http\Models\ProbeTemplate::STATUS['delete']) {
+            $code = Resp::PROBE_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->fill($probeOrm);
+        return $code;
+    }
+
+    /**
+     * 本方法用于在调研模板下新增一道简答题
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param ShortQuestion $short 简答题对象
+     * @return bool true表示新增成功 false表示新增失败
+    */
+    public function addShortQuestion($short) {
+        $model = new ShortStem();
+        return $model->create($this->orm, $short);
+    }
+
+    /**
+     * 本方法用于在调研模板下新增一道单选题
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param SingleChoice $singleChoice 单选题对象
+     * @return bool true表示新增成功 false表示新增失败
+    */
+    public function addSingleChoice($singleChoice) {
+        $model = new SingleChoiceStem();
+        return $model->create($this->orm, $singleChoice);
+    }
+
+    /**
+     * 本方法用于在调研模板下新增一道多选题
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param MultipleChoice $multipleChoice 多选题对象
+     * @return bool true表示新增成功 false表示新增失败
+     */
+    public function addMultipleChoice($multipleChoice) {
+       $model = new MultipleChoiceStem();
+       return $model->create($this->orm, $multipleChoice);
     }
 }
