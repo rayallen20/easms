@@ -411,8 +411,6 @@ class StudentController extends Controller {
         }
         // step1. 接受参数 验证规则 end
 
-        // step1. 接受参数 验证规则 end
-
         // step2. 鉴权 start
         $userBiz = new User();
         $code = $userBiz->authenticate($jwt);

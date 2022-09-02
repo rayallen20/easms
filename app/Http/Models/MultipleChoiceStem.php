@@ -3,6 +3,7 @@ namespace App\Http\Models;
 
 use App\Biz\Question\ChoiceQuestion\MultipleChoice;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class MultipleChoiceStem extends Model {
@@ -43,6 +44,14 @@ class MultipleChoiceStem extends Model {
      * @var string $dateFormat 时间戳格式
      */
     protected $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * 本方法用于定义本表(multiple_choice_stem表)与multiple_choice_option表之间通过multiple_choice_stem.id和multiple_choice_option.stem_id建立的1对多关系
+     * @return HasMany
+     */
+    public function options() {
+        return $this->hasMany('App\Http\Models\MultipleChoiceOption', 'stem_id', 'id');
+    }
 
     /**
      * 本方法用于使用事务创建1条单选题数据

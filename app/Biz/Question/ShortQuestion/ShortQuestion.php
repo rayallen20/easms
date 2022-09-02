@@ -2,6 +2,7 @@
 namespace App\Biz\Question\ShortQuestion;
 
 use App\Biz\Question\Question;
+use App\Http\Models\ShortStem;
 use App\Lib\Resp;
 
 class ShortQuestion extends Question
@@ -54,5 +55,17 @@ class ShortQuestion extends Question
             return $result;
         }
         return $result;
+    }
+
+    /**
+     * 本方法用于根据简答题ORM对象 填充简答题Biz层对象
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param ShortStem $orm
+    */
+    public function fill($orm)
+    {
+        parent::fill($orm);
+        $this->answerType = $orm->answer_type;
     }
 }

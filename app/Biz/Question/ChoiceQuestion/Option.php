@@ -1,6 +1,9 @@
 <?php
 namespace App\Biz\Question\ChoiceQuestion;
 
+use App\Http\Models\MultipleChoiceOption;
+use App\Http\Models\SingleChoiceOption;
+
 class Option {
     /**
      * @var int $id 选项id
@@ -36,5 +39,19 @@ class Option {
         $this->question = $question;
         $this->content = $content;
         $this->sort = $sort;
+    }
+
+    /**
+     * 本方法用于根据选项ORM填充选项Biz层对象
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param SingleChoiceOption|MultipleChoiceOption $orm 单选题选项ORM或多选题选项ORM
+    */
+    public function fill($orm) {
+        $this->id = $orm->id;
+        $this->content = $orm->content;
+        $this->sort = $orm->sort;
+        $this->createdTime = explode('.', $orm->created_time)[0];
+        $this->updatedTime = explode('.', $orm->updated_time)[0];
     }
 }

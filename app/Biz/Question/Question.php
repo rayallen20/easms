@@ -2,6 +2,8 @@
 namespace App\Biz\Question;
 
 use App\Biz\ProbeTemplate;
+use App\Http\Models\MultipleChoiceStem;
+use App\Http\Models\SingleChoiceStem;
 use App\Lib\Resp;
 
 abstract class Question {
@@ -79,6 +81,20 @@ abstract class Question {
         $this->stem = $stem;
         $this->sort = $this->probe->topicNumber + 1;
         return $result;
+    }
+
+    /**
+     * 本方法用于根据不同类型题目的ORM信息 填充题目的公共属性
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param SingleChoiceStem|MultipleChoiceStem|SingleChoiceStem $orm 简答题\单选题\多选题ORM
+    */
+    public function fill($orm) {
+        $this->id = $orm->id;
+        $this->stem = $orm->content;
+        $this->sort = $orm->sort;
+        $this->createdTime = explode('.', $orm->created_time)[0];
+        $this->updatedTime = explode('.', $orm->updated_time)[0];
     }
 
     /**

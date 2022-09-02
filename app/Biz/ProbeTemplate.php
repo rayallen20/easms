@@ -3,6 +3,7 @@ namespace App\Biz;
 
 use App\Biz\Question\ChoiceQuestion\MultipleChoice;
 use App\Biz\Question\ChoiceQuestion\SingleChoice;
+use App\Biz\Question\Question;
 use App\Biz\Question\ShortQuestion\ShortQuestion;
 use App\Http\Models\MultipleChoiceStem;
 use App\Http\Models\ShortStem;
@@ -35,6 +36,11 @@ class ProbeTemplate {
      * @var int $topicNumber 调研问卷题目数量
     */
     public $topicNumber;
+
+    /**
+     * @var array<Question> 调研问卷所属问题
+    */
+    public $questions;
 
     /**
      * @var int $answererNum 作答人数
@@ -140,6 +146,26 @@ class ProbeTemplate {
         $this->createdTime = explode('.', $model->created_time)[0];
         $this->updatedTime = explode('.', $model->updated_time)[0];
         $this->orm = $model;
+
+        // 此处对题目进行排序 使用 题目的序号 - 1 作为数组中的索引
+        $this->questions = [];
+        foreach ($model->shortQuestions as $shortQuestion) {
+            $shortQuestionBiz = new ShortQuestion();
+            $shortQuestionBiz->fill($shortQuestion);
+            $this->questions[$shortQuestionBiz->sort - 1] = $shortQuestionBiz;
+        }
+
+        foreach ($model->singleChoices as $singleChoice) {
+            $singleChoiceBiz = new SingleChoice();
+            $singleChoiceBiz->fill($singleChoice);
+            $this->questions[$singleChoiceBiz->sort - 1] = $singleChoiceBiz;
+        }
+
+        foreach ($model->multipleChoices as $multipleChoice) {
+            $multipleChoiceBiz = new MultipleChoice();
+            $multipleChoiceBiz->fill($multipleChoice);
+            $this->questions[$multipleChoiceBiz->sort - 1] = $multipleChoiceBiz;
+        }
     }
 
     /**
@@ -269,5 +295,24 @@ class ProbeTemplate {
     public function addMultipleChoice($multipleChoice) {
        $model = new MultipleChoiceStem();
        return $model->create($this->orm, $multipleChoice);
+    }
+
+    /**
+     * 本方法用于在指定的调研模板下列表显示问题
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 调研模板id
+     * @return int $code 错误码
+    */
+    public function listQuestion($id) {
+        $code = $this->exist($id);
+        if ($code == Resp::PROBE_NOT_EXIST) {
+            return $code;
+        }
+
+        if ($code == Resp::PROBE_HAS_BEEN_DELETE) {
+            return $code;
+        }
+        return $code;
     }
 }

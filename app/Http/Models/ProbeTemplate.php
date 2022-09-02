@@ -3,6 +3,7 @@ namespace App\Http\Models;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProbeTemplate extends Model {
     /**
@@ -42,6 +43,30 @@ class ProbeTemplate extends Model {
      * @var string $dateFormat 时间戳格式
      */
     protected $dateFormat = 'Y-m-d H:i:s';
+
+    /**
+     * 本方法用于定义本表(probe_template表)与short_stem表之间通过probe.id和short_stem.probe_id建立的1对多关系
+     * @return HasMany
+     */
+    public function shortQuestions() {
+        return $this->hasMany('App\Http\Models\ShortStem', 'probe_id', 'id');
+    }
+
+    /**
+     * 本方法用于定义本表(probe_template表)与single_choice_stem表之间通过probe.id和single_choice_stem.probe_id建立的1对多关系
+     * @return HasMany
+     */
+    public function singleChoices() {
+        return $this->hasMany('App\Http\Models\SingleChoiceStem', 'probe_id', 'id');
+    }
+
+    /**
+     * 本方法用于定义本表(probe_template表)与multiple_choice_stem表之间通过probe.id和multiple_choice_stem.probe_id建立的1对多关系
+     * @return HasMany
+     */
+    public function multipleChoices() {
+        return $this->hasMany('App\Http\Models\MultipleChoiceStem', 'probe_id', 'id');
+    }
 
     /**
      * 本方法用于创建1条probe_template表中的信息

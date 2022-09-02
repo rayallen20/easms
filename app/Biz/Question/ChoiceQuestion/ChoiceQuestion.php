@@ -2,6 +2,8 @@
 namespace App\Biz\Question\ChoiceQuestion;
 
 use App\Biz\Question\Question;
+use App\Http\Models\MultipleChoiceStem;
+use App\Http\Models\SingleChoiceStem;
 use App\Lib\Lib;
 use App\Lib\Resp;
 
@@ -89,5 +91,23 @@ abstract class ChoiceQuestion extends Question {
         }
 
         return $result;
+    }
+
+    /**
+     * 本方法用于根据选择题的ORM信息 填充选择题的公共属性
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param MultipleChoiceStem|SingleChoiceStem $orm 单选题\多选题ORM
+     */
+    public function fill($orm)
+    {
+        parent::fill($orm);
+        $this->displayType = $orm->display_type;
+        $this->options = [];
+        foreach ($orm->options as $option) {
+            $optionBiz = new Option();
+            $optionBiz->fill($option);
+            $this->options[$optionBiz->sort] = $optionBiz;
+        }
     }
 }
