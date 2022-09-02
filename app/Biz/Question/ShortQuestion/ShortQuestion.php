@@ -68,4 +68,50 @@ class ShortQuestion extends Question
         parent::fill($orm);
         $this->answerType = $orm->answer_type;
     }
+
+    /**
+     * 本方法用于更新简答题信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $answerType 简答题答案类型
+     * @return array $result
+     * int $result['code'] 错误码
+     * string $result['exceptionMessage'] 仅当错误码为校验参数错误时有内容 表示参数错误信息
+    */
+    public function update($id, $questionType, $stem, $displayType, $answerType, $options)
+    {
+        $result = [
+            'code' => 0,
+            'exceptionMessage' => ''
+        ];
+
+        if (!in_array($answerType, self::ANSWER_TYPES)) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '简答题答案类型必须为文本型或数字型';
+            return $result;
+        }
+
+        $model = new ShortStem();
+        $orm = $model->findById($id);
+        if ($orm == null) {
+            $result['code'] = Resp::QUESTION_NOT_EXIST;
+            return $result;
+        }
+
+        if ($orm->status == ShortStem::STATUS['delete']) {
+            $result['code'] = Resp::QUESTION_HAS_BEEN_DELETE;
+            return $result;
+        }
+
+        $this->stem = $stem;
+        $this->answerType = $answerType;
+        $updateResult = $model->updateShortStem($orm, $this);
+        if (!$updateResult) {
+            $result['code'] = Resp::SAVE_DATABASE_FAILED;
+            return $result;
+        }
+
+        $this->fill($orm);
+        return $result;
+    }
 }

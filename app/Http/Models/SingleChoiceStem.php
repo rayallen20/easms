@@ -59,6 +59,8 @@ class SingleChoiceStem extends Model {
      * 1. 调研模板问题数量+1
      * 2. 创建单选题
      * 3. 创建选项
+     * @access public
+     * @author Roach<18410269837@163.com>
      * @param ProbeTemplate $probeOrm 调研模板ORM
      * @param SingleChoice $singleChoice 单选题业务层对象
      * @return bool true表示创建成功 false表示创建失败
@@ -83,6 +85,54 @@ class SingleChoiceStem extends Model {
             foreach ($singleChoice->options as $option) {
                 $optionOrm = new SingleChoiceOption();
                 $optionOrm->stem_id = $this->id;
+                $optionOrm->content = $option->content;
+                $optionOrm->sort = $option->sort;
+                $optionOrm->status = SingleChoiceOption::STATUS['normal'];
+                $optionOrm->save();
+            }
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
+    }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于使用事务更新1条单选题数据
+     * 事务:
+     * 1. 更新单选题信息
+     * 2. 将更新前的单选题下所有选项均置为删除状态
+     * 3. 创建新选项
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param SingleChoiceStem $orm 单选题ORM
+     * @param SingleChoice $singleChoice 单选题业务层对象
+     * @return bool true表示创建成功 false表示创建失败
+     * @throws \Exception $e
+     */
+    public function updateSingleChoice($orm, $singleChoice) {
+        DB::beginTransaction();
+        try {
+            // 更新单选题信息
+            $orm->content = $singleChoice->stem;
+            $orm->display_type = $singleChoice->displayType;
+            $orm->save();
+
+            // 将更新前的单选题下所有选项均置为删除状态
+            foreach ($orm->options as $option) {
+                $option->status = SingleChoiceOption::STATUS['delete'];
+                $option->save();
+            }
+
+            // 创建新选项
+            foreach ($singleChoice->options as $option) {
+                $optionOrm = new SingleChoiceOption();
+                $optionOrm->stem_id = $orm->id;
                 $optionOrm->content = $option->content;
                 $optionOrm->sort = $option->sort;
                 $optionOrm->status = SingleChoiceOption::STATUS['normal'];

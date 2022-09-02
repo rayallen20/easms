@@ -72,4 +72,22 @@ class ShortStem extends Model {
             return false;
         }
     }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于更新1条简答题信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param ShortStem $orm 要更新的orm
+     * @param ShortQuestion $biz 业务层简答题对象 表示待更新简答题
+     * @return bool 更新结果
+     */
+    public function updateShortStem($orm, $biz) {
+        $orm->content = $biz->stem;
+        $orm->answer_type = $biz->answerType;
+        return $orm->save();
+    }
 }

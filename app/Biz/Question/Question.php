@@ -109,4 +109,17 @@ abstract class Question {
      * @param array<string> $options 选择题选项
     */
     public abstract function create($probeId, $questionType, $stem, $displayType, $answerType, $options);
+
+    /**
+     * 本方法用于定义修改问题操作的抽象方法
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 问题id
+     * @param string $questionType 题目类型
+     * @param string $stem 题干内容
+     * @param string $displayType 选择题统计结果展示形式
+     * @param string $answerType 简答题答案类型
+     * @param array<string> $options 选择题选项
+     */
+    public abstract function update($id, $questionType, $stem, $displayType, $answerType, $options);
 }

@@ -2,7 +2,11 @@
 namespace App\Http\Controllers\v1;
 
 use App\Biz\Logger;
+use App\Biz\Question\ChoiceQuestion\MultipleChoice;
+use App\Biz\Question\ChoiceQuestion\SingleChoice;
+use App\Biz\Question\Question;
 use App\Biz\Question\QuestionFactory;
+use App\Biz\Question\ShortQuestion\ShortQuestion;
 use App\Biz\User;
 use App\Http\Controllers\Controller;
 use App\Lib\Lib;
@@ -41,7 +45,6 @@ class QuestionController extends Controller {
             'questionType' => $questionType,
             'stem' => $stem,
             'displayType' => $displayType,
-            'options' => $options,
         ];
 
         $rules = [
@@ -126,6 +129,186 @@ class QuestionController extends Controller {
         }
         // step4. 记录日志 end
         $json = $resp->success([]);
+        return $json;
+    }
+
+    /**
+     * 本方法用于修改问题操作
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * user.jwt string 用户jwt(必填)
+     * question.id int 问题id
+     * question.type string 题目类型(必填)
+     * question.stem string 题干(必填)
+     * question.displayType string 统计结果展示形式(选填 仅在题型为单选题或多选题时必填)
+     * question.answerType string 简答题类型(选填 仅在题型为简答题时必填)
+     * question.option array<string> 选项(选填 仅在题型为单选题或多选题时必填)
+     * @return string $json 返回至前端的json
+     */
+    public function update(Request $request) {
+        // step1. 接受参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $questionType = $request->input('question.type');
+        $questionId = $request->input('question.id');
+        $stem = $request->input('question.stem');
+        $displayType = $request->input('question.displayType');
+        $answerType = $request->input('question.answerType');
+        $options = $request->input('question.options');
+
+        $params = [
+            'jwt' => $jwt,
+            'id' => $questionId,
+            'questionType' => $questionType,
+            'stem' => $stem,
+            'displayType' => $displayType,
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+            'id' => 'required|int|min:1',
+            'questionType' => 'required|string',
+            'stem' => 'required|string',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'id.required' => '问题id不能为空',
+            'id.int' => '问题id必须为整型',
+            'id.min' => '问题id字段值不能小于1',
+            'questionType.required' => '问题类型不能为空',
+            'questionType.string' => '问题类型内容必须为字符串',
+            'stem.required' => '题干不能为空',
+            'stem.string' => '题干内容必须为字符串',
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接受参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $resp = new Resp();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $questionFactory = new QuestionFactory();
+        $result = $questionFactory->create($questionType);
+        if ($result['code'] == Resp::PARAM_INVALID) {
+            $json = $resp->paramInvalid($result['exceptionMessage'], []);
+            return $json;
+        }
+
+        $questionBiz = $result['question'];
+        $result = $questionBiz->update($questionId, $questionType, $stem, $displayType, $answerType, $options);
+        if ($result['code'] == Resp::PARAM_INVALID) {
+            $json = $resp->paramInvalid($result['exceptionMessage'], []);
+            return $json;
+        }
+
+        if ($result['code'] == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logUpdateQuestion();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+
+        // step5. 封装返回值结构 start
+        $data = [
+            'question' => []
+        ];
+        if ($questionBiz instanceof ShortQuestion) {
+            $data['question'] = [
+                'id' => $questionBiz->id,
+                'type' => Question::TYPES['shortQuestion'],
+                'stem' => $questionBiz->stem,
+                'sort' => $questionBiz->sort,
+                'answerType' => $questionBiz->answerType,
+                'createdTime' => $questionBiz->createdTime,
+                'updatedTime' => $questionBiz->updatedTime,
+            ];
+        }
+
+        if ($questionBiz instanceof SingleChoice) {
+            $data['question'] = [
+                'id' => $questionBiz->id,
+                'type' => Question::TYPES['singleChoice'],
+                'stem' => $questionBiz->stem,
+                'sort' => $questionBiz->sort,
+                'displayType' => $questionBiz->displayType,
+                'createdTime' => $questionBiz->createdTime,
+                'updatedTime' => $questionBiz->updatedTime,
+            ];
+
+            $data['question']['options'] = [];
+            foreach ($questionBiz->options as $option) {
+                $optionArr = [
+                    'id' => $option->id,
+                    'content' => $option->content,
+                    'sort' => $option->sort,
+                ];
+                array_push($data['question']['options'], $optionArr);
+            }
+        }
+
+        if ($questionBiz instanceof MultipleChoice) {
+            $data['question'] = [
+                'id' => $questionBiz->id,
+                'type' => Question::TYPES['multipleChoice'],
+                'stem' => $questionBiz->stem,
+                'sort' => $questionBiz->sort,
+                'displayType' => $questionBiz->displayType,
+                'createdTime' => $questionBiz->createdTime,
+                'updatedTime' => $questionBiz->updatedTime,
+            ];
+
+            $data['question']['options'] = [];
+            foreach ($questionBiz->options as $option) {
+                $optionArr = [
+                    'id' => $option->id,
+                    'content' => $option->content,
+                    'sort' => $option->sort,
+                ];
+                array_push($data['question']['options'], $optionArr);
+            }
+        }
+        // step5. 封装返回值结构 end
+        $json = $resp->success($data);
         return $json;
     }
 }

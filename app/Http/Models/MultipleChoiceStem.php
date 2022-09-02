@@ -2,6 +2,7 @@
 namespace App\Http\Models;
 
 use App\Biz\Question\ChoiceQuestion\MultipleChoice;
+use App\Biz\Question\ChoiceQuestion\SingleChoice;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
@@ -88,6 +89,55 @@ class MultipleChoiceStem extends Model {
                 $optionOrm->status = MultipleChoiceOption::STATUS['normal'];
                 $optionOrm->save();
             }
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
+    }
+
+    public function findById($id) {
+        return $this->where('id', $id)->first();
+    }
+
+    /**
+     * 本方法用于使用事务更新1条多选题数据
+     * 事务:
+     * 1. 更新多选题信息
+     * 2. 将更新前的多选题下所有选项均置为删除状态
+     * 3. 创建新选项
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param SingleChoiceStem $orm 多选题ORM
+     * @param MultipleChoice $multipleChoice 多选题业务层对象
+     * @return bool true表示创建成功 false表示创建失败
+     * @throws \Exception $e
+     */
+    public function updateMultipleChoice($orm, $multipleChoice) {
+        DB::beginTransaction();
+        try {
+            // 更新多选题信息
+            $orm->content = $multipleChoice->stem;
+            $orm->display_type = $multipleChoice->displayType;
+            $orm->save();
+
+            // 将更新前的多选题下所有选项均置为删除状态
+            foreach ($orm->options as $option) {
+                $option->status = SingleChoiceOption::STATUS['delete'];
+                $option->save();
+            }
+
+            // 创建新选项
+            foreach ($multipleChoice->options as $option) {
+                $optionOrm = new MultipleChoiceOption();
+                $optionOrm->stem_id = $orm->id;
+                $optionOrm->content = $option->content;
+                $optionOrm->sort = $option->sort;
+                $optionOrm->status = MultipleChoiceOption::STATUS['normal'];
+                $optionOrm->save();
+            }
+
             DB::commit();
             return true;
         } catch (\Exception $e) {

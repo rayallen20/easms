@@ -2,7 +2,9 @@
 namespace App\Biz\Question\ChoiceQuestion;
 
 use App\Biz\Question\Question;
+use App\Http\Models\MultipleChoiceOption;
 use App\Http\Models\MultipleChoiceStem;
+use App\Http\Models\SingleChoiceOption;
 use App\Http\Models\SingleChoiceStem;
 use App\Lib\Lib;
 use App\Lib\Resp;
@@ -105,9 +107,11 @@ abstract class ChoiceQuestion extends Question {
         $this->displayType = $orm->display_type;
         $this->options = [];
         foreach ($orm->options as $option) {
-            $optionBiz = new Option();
-            $optionBiz->fill($option);
-            $this->options[$optionBiz->sort] = $optionBiz;
+            if ($option->status == SingleChoiceOption::STATUS['normal'] || $option->status == MultipleChoiceOption::STATUS['normal']) {
+                $optionBiz = new Option();
+                $optionBiz->fill($option);
+                $this->options[$optionBiz->sort] = $optionBiz;
+            }
         }
     }
 }
