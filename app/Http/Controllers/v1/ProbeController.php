@@ -566,6 +566,10 @@ class ProbeController extends Controller {
             'pagination' => $pagination,
             'probe' => [
                 'id' => $probeBiz->id,
+                'name' => $probeBiz->name,
+                'startDate' => $probeBiz->startDate,
+                'endDate' => $probeBiz->endDate,
+                'topicNumber' => $probeBiz->topicNumber,
                 'questions' => []
             ]
         ];
@@ -636,6 +640,112 @@ class ProbeController extends Controller {
         // step4. 封装返回值结构 end
 
         $json = $resp->success($data);
+        return $json;
+    }
+
+    /**
+     * 本方法用于删除题目
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * user.jwt string 操作者用户jwt
+     * probe.id int 被删除的学生信息id
+     * probe.question.type string 被删除的题目类型
+     * probe.question.id int 被删除的题目id
+     * @return string $json 返回至前端的JSON
+     */
+    public function deleteQuestion(Request $request) {
+        // step1. 接收参数并校验 start
+        $jwt = $request->input('user.jwt');
+        $probeId = $request->input('probe.id');
+        $sort = $request->input('probe.question.sort');
+
+        $params = [
+            'jwt' => $jwt,
+            'probeId' => $probeId,
+            'sort' => $sort,
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+            'probeId' => 'required|int|min:1',
+            'sort' => 'required|int|min:1',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'probeId.required' => '调研模板id不能为空',
+            'probeId.int' => '调研模板id必须为整型',
+            'probeId.min' => '调研模板id字段值不能小于1',
+            'sort.required' => '问题序号不能为空',
+            'sort.int' => '问题序号必须为整型',
+            'sort.min' => '问题序号字段值不能小于1',
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接收参数并校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $probeBiz = new ProbeTemplate();
+        $code = $probeBiz->deleteQuestion($probeId, $sort);
+        if ($code == Resp::PROBE_NOT_EXIST) {
+            $json = $resp->probeNotExist([]);
+            return $json;
+        }
+
+        if ($code == Resp::PROBE_HAS_BEEN_DELETE) {
+            $json = $resp->probeHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($code == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logDeleteQuestion();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+
+        $json = $resp->success([]);
         return $json;
     }
 }

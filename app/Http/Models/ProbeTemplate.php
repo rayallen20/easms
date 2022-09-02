@@ -4,6 +4,7 @@ namespace App\Http\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class ProbeTemplate extends Model {
     /**
@@ -158,5 +159,133 @@ class ProbeTemplate extends Model {
     public function updateStatus($orm, $status) {
         $orm->status = $status;
         return $orm->save();
+    }
+
+    /**
+     * 本方法用于使用事务在指定调研问卷下删除1条题目信息
+     * 事务:
+     * 1. 更新调研问卷信息 (问卷题目数量-1)
+     * 2. 删除指定序号的题目
+     * 3. 该指定序号后所有题目的序号-1
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param ProbeTemplate $orm 调研问卷orm
+     * @param int $sort 待删除题目在问卷中的序号
+     * @return bool 更新结果
+    */
+    public function deleteQuestion($orm, $sort) {
+        DB::beginTransaction();
+        try {
+            // 问卷题目数量 -1
+            $orm->topic_number -= 1;
+            $orm->save();
+
+            // 删除指定序号的问题
+            foreach ($orm->shortQuestions as $shortQuestion) {
+                if ($shortQuestion->sort == $sort) {
+                    $shortQuestion->status = ShortStem::STATUS['delete'];
+                    $shortQuestion->sort = null;
+                    $shortQuestion->save();
+                }
+
+                if ($shortQuestion->sort > $sort) {
+                    $shortQuestion->sort -= 1;
+                    $shortQuestion->save();
+                }
+            }
+
+            foreach ($orm->singleChoices as $singleChoice) {
+                if ($singleChoice->sort == $sort) {
+                    $singleChoice->status = SingleChoiceStem::STATUS['delete'];
+                    $singleChoice->sort = null;
+                    $singleChoice->save();
+
+                    foreach ($singleChoice->options as $option) {
+                        $option->status = SingleChoiceOption::STATUS['delete'];
+                        $option->save();
+                    }
+                }
+
+                if ($singleChoice->sort > $sort) {
+                    $singleChoice->sort -= 1;
+                    $singleChoice->save();
+                }
+            }
+
+            foreach ($orm->multipleChoices as $multipleChoice) {
+                if ($multipleChoice->sort == $sort) {
+                    $multipleChoice->status = MultipleChoiceStem::STATUS['delete'];
+                    $multipleChoice->sort = null;
+                    $multipleChoice->save();
+
+                    foreach ($multipleChoice->options as $option) {
+                        $option->status = MultipleChoiceOption::STATUS['delete'];
+                        $option->save();
+                    }
+                }
+
+                if ($multipleChoice->sort > $sort) {
+                    $multipleChoice->sort -= 1;
+                    $multipleChoice->save();
+                }
+            }
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
+    }
+
+    /**
+     * 本方法用于使用事务删除调研问卷
+     * 1. 删除调研问卷
+     * 2. 删除调研问卷下的所有问题
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param ProbeTemplate $orm 调研问卷orm
+     * @return bool 更新结果
+    */
+    public function deleteProbe($orm) {
+        DB::beginTransaction();
+        try {
+            // 删除调研问卷
+            $orm->status = ProbeTemplate::STATUS['delete'];
+            $orm->save();
+
+            foreach ($orm->shortQuestions as $shortQuestion) {
+                $shortQuestion->status = ShortStem::STATUS['delete'];
+                $shortQuestion->sort = null;
+                $shortQuestion->save();
+            }
+
+            foreach ($orm->singleChoices as $singleChoice) {
+                $singleChoice->status = SingleChoiceStem::STATUS['delete'];
+                $singleChoice->sort = null;
+                $singleChoice->save();
+
+                foreach ($singleChoice->options as $option) {
+                    $option->status = SingleChoiceOption::STATUS['delete'];
+                    $option->save();
+                }
+            }
+
+            foreach ($orm->multipleChoices as $multipleChoice) {
+                $multipleChoice->status = MultipleChoiceStem::STATUS['delete'];
+                $multipleChoice->sort = null;
+                $multipleChoice->save();
+
+                foreach ($multipleChoice->options as $option) {
+                    $option->status = MultipleChoiceOption::STATUS['delete'];
+                    $option->save();
+                }
+            }
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
     }
 }

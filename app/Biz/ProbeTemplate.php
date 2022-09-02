@@ -150,21 +150,27 @@ class ProbeTemplate {
         // 此处对题目进行排序 使用 题目的序号 - 1 作为数组中的索引
         $this->questions = [];
         foreach ($model->shortQuestions as $shortQuestion) {
-            $shortQuestionBiz = new ShortQuestion();
-            $shortQuestionBiz->fill($shortQuestion);
-            $this->questions[$shortQuestionBiz->sort - 1] = $shortQuestionBiz;
+           if ($shortQuestion->status == ShortStem::STATUS['normal']) {
+               $shortQuestionBiz = new ShortQuestion();
+               $shortQuestionBiz->fill($shortQuestion);
+               $this->questions[$shortQuestionBiz->sort - 1] = $shortQuestionBiz;
+           }
         }
 
         foreach ($model->singleChoices as $singleChoice) {
-            $singleChoiceBiz = new SingleChoice();
-            $singleChoiceBiz->fill($singleChoice);
-            $this->questions[$singleChoiceBiz->sort - 1] = $singleChoiceBiz;
+            if ($singleChoice->status == SingleChoiceStem::STATUS['normal']) {
+                $singleChoiceBiz = new SingleChoice();
+                $singleChoiceBiz->fill($singleChoice);
+                $this->questions[$singleChoiceBiz->sort - 1] = $singleChoiceBiz;
+            }
         }
 
         foreach ($model->multipleChoices as $multipleChoice) {
-            $multipleChoiceBiz = new MultipleChoice();
-            $multipleChoiceBiz->fill($multipleChoice);
-            $this->questions[$multipleChoiceBiz->sort - 1] = $multipleChoiceBiz;
+            if ($multipleChoice->status == MultipleChoiceStem::STATUS['normal']) {
+                $multipleChoiceBiz = new MultipleChoice();
+                $multipleChoiceBiz->fill($multipleChoice);
+                $this->questions[$multipleChoiceBiz->sort - 1] = $multipleChoiceBiz;
+            }
         }
     }
 
@@ -228,7 +234,7 @@ class ProbeTemplate {
             return $code;
         }
 
-        $result = $model->updateStatus($probeOrm, \App\Http\Models\ProbeTemplate::STATUS['delete']);
+        $result = $model->deleteProbe($probeOrm);
         if (!$result) {
             $code = Resp::SAVE_DATABASE_FAILED;
             return $code;
@@ -311,6 +317,33 @@ class ProbeTemplate {
         }
 
         if ($code == Resp::PROBE_HAS_BEEN_DELETE) {
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于在指定的调研模板下删除指定问题
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param int $id 调研模板id
+     * @param int $sort 题目序号
+     * @return int $code 错误码
+    */
+    public function deleteQuestion($id, $sort) {
+        $code = 0;
+        $code = $this->exist($id);
+        if ($code == Resp::PROBE_NOT_EXIST) {
+            return $code;
+        }
+
+        if ($code == Resp::PROBE_HAS_BEEN_DELETE) {
+            return $code;
+        }
+        $model = new \App\Http\Models\ProbeTemplate();
+        $saveResult = $model->deleteQuestion($this->orm, $sort);
+        if (!$saveResult) {
+            $code = Resp::SAVE_DATABASE_FAILED;
             return $code;
         }
         return $code;
