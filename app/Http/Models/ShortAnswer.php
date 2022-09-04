@@ -38,4 +38,9 @@ class ShortAnswer extends Model {
         $this->stem_id = $stemId;
         $this->content = $content;
     }
+
+    public function findByStemId($stemId) {
+        return $this->where('stem_id', $stemId)
+            ->get();
+    }
 }

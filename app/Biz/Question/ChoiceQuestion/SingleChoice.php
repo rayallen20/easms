@@ -1,6 +1,7 @@
 <?php
 namespace App\Biz\Question\ChoiceQuestion;
 
+use App\Biz\Answer\SingleChoiceAnswer;
 use App\Http\Models\SingleChoiceStem;
 use App\Lib\Lib;
 use App\Lib\Resp;
@@ -107,5 +108,10 @@ class SingleChoice extends ChoiceQuestion {
         $orm = $model->findById($id);
         $this->fill($orm);
         return $result;
+    }
+
+    public function count() {
+        $answerBiz = new SingleChoiceAnswer();
+        $answerBiz->count($this);
     }
 }

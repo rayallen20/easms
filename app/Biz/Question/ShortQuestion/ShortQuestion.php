@@ -1,6 +1,7 @@
 <?php
 namespace App\Biz\Question\ShortQuestion;
 
+use App\Biz\Answer\ShortAnswer;
 use App\Biz\Question\Question;
 use App\Http\Models\ShortStem;
 use App\Lib\Resp;
@@ -21,6 +22,11 @@ class ShortQuestion extends Question
      * @var string $answerType 简答题答案类型
      */
     public $answerType;
+
+    /**
+     * @var array<\App\Biz\Answer\ShortAnswer> $answers
+    */
+    public $answers;
 
     /**
      * 本方法用于创建简答题
@@ -113,5 +119,10 @@ class ShortQuestion extends Question
 
         $this->fill($orm);
         return $result;
+    }
+
+    public function count() {
+        $answerBiz = new ShortAnswer();
+        $this->answers = $answerBiz->count($this);
     }
 }

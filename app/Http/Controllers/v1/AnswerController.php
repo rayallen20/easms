@@ -72,11 +72,11 @@ class AnswerController extends Controller {
         $probeBiz = new ProbeTemplate();
         $probeBiz->id = $probeId;
         $answerBiz = new ProbeAnswer($probeBiz, $studentBiz);
-//        $code = $answerBiz->exist();
-//        if ($code == Resp::STUDENT_HAS_BEEN_ANSWERED) {
-//            $json = $resp->studentHasBeenAnswer([]);
-//            return $json;
-//        }
+        $code = $answerBiz->exist();
+        if ($code == Resp::STUDENT_HAS_BEEN_ANSWERED) {
+            $json = $resp->studentHasBeenAnswer([]);
+            return $json;
+        }
         // step3. 检测学生是否已作答 end
 
         // step4. 保存作答内容 start

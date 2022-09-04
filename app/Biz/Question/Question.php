@@ -122,4 +122,6 @@ abstract class Question {
      * @param array<string> $options 选择题选项
      */
     public abstract function update($id, $questionType, $stem, $displayType, $answerType, $options);
+
+    public abstract function count();
 }

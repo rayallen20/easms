@@ -1,6 +1,7 @@
 <?php
 namespace App\Biz\Question\ChoiceQuestion;
 
+use App\Biz\Answer\MultipleChoiceAnswer;
 use App\Http\Models\MultipleChoiceStem;
 use App\Lib\Lib;
 use App\Lib\Resp;
@@ -109,5 +110,10 @@ class MultipleChoice extends ChoiceQuestion {
         $orm = $model->findById($id);
         $this->fill($orm);
         return $result;
+    }
+
+    public function count() {
+        $answerBiz = new MultipleChoiceAnswer();
+        $answerBiz->count($this);
     }
 }

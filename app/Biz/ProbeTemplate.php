@@ -354,4 +354,20 @@ class ProbeTemplate {
         $saveResult = $model->answer($this->orm, $orms);
         return $saveResult;
     }
+
+    public function count($id) {
+        $code = $this->exist($id);
+        if ($code == Resp::PROBE_NOT_EXIST) {
+            return $code;
+        }
+
+        if ($code == Resp::PROBE_HAS_BEEN_DELETE) {
+            return $code;
+        }
+
+        foreach ($this->questions as $question) {
+            $question->probe = $this;
+            $question->count();
+        }
+    }
 }

@@ -35,6 +35,11 @@ class Option {
      */
     public $updatedTime;
 
+    /**
+     * @var float $rate 该选项被选择的比例
+    */
+    public $rate;
+
     public function create($question, $content, $sort) {
         $this->question = $question;
         $this->content = $content;
