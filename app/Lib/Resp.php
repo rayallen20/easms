@@ -232,6 +232,11 @@ class Resp {
      */
     const QUESTION_HAS_BEEN_DELETE = 10045;
 
+    /**
+     * @const int STUDENT_HAS_BEEN_ANSWERED 本状态码表示学生已经作答
+    */
+    const STUDENT_HAS_BEEN_ANSWERED = 10046;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -278,6 +283,7 @@ class Resp {
         self::PROBE_HAS_BEEN_DELETE => '调研模板已被删除,无法执行当前操作',
         self::QUESTION_NOT_EXIST => '问题信息不存在',
         self::QUESTION_HAS_BEEN_DELETE => '问题已被删除,无法执行当前操作',
+        self::STUDENT_HAS_BEEN_ANSWERED => '该问卷已被作答,无法重复填写',
     ];
 
     /**
@@ -808,6 +814,17 @@ class Resp {
      */
     public function questionHasBeenDeleted($data) {
         return self::generate(self::QUESTION_HAS_BEEN_DELETE, self::MESSAGE[self::QUESTION_HAS_BEEN_DELETE], $data);
+    }
+
+    /**
+     * 本方法用于生成在学生已经回答指定问卷时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function studentHasBeenAnswer($data) {
+        return self::generate(self::STUDENT_HAS_BEEN_ANSWERED, self::MESSAGE[self::STUDENT_HAS_BEEN_ANSWERED], $data);
     }
 }
 

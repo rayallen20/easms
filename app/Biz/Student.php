@@ -517,4 +517,29 @@ class Student {
         }
         return $code;
     }
+
+    /**
+     * 本方法用于根据学号确认学生是否存在
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param string $number 学号
+     * @return int $code 存在返回0 否则返回对应错误码
+    */
+    public function existByNumber($number) {
+        $code = 0;
+        $model = new \App\Http\Models\Student();
+        $studentOrm = $model->findByNumber($number);
+        if ($studentOrm == null) {
+            $code = Resp::STUDENT_NOT_EXIST;
+            return $code;
+        }
+
+        if ($studentOrm->status == \App\Http\Models\Student::STATUS['delete']) {
+            $code = Resp::STUDENT_HAS_BEEN_DELETE;
+            return $code;
+        }
+
+        $this->fill($studentOrm);
+        return $code;
+    }
 }

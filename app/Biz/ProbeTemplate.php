@@ -348,4 +348,10 @@ class ProbeTemplate {
         }
         return $code;
     }
+
+    public function answer($orms) {
+        $model = new \App\Http\Models\ProbeTemplate();
+        $saveResult = $model->answer($this->orm, $orms);
+        return $saveResult;
+    }
 }

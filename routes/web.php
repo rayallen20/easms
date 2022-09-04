@@ -62,3 +62,4 @@ Route::post('v1/question/create', 'v1\QuestionController@create');
 Route::post('v1/probe/list/question', 'v1\ProbeController@listQuestion');
 Route::post('v1/question/update', 'v1\QuestionController@update');
 Route::post('v1/probe/delete/question', 'v1\ProbeController@deleteQuestion');
+Route::post('v1/probe/answer', 'v1\AnswerController@answer');

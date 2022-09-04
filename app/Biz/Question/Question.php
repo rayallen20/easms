@@ -20,7 +20,7 @@ abstract class Question {
     ];
 
     /**
-     * @var int $id 题题目id
+     * @var int $id 题目id
      */
     public $id;
 

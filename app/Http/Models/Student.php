@@ -187,4 +187,8 @@ class Student extends Model {
         $orm->status = $status;
         return $orm->save();
     }
+
+    public function findByNumber($number) {
+        return $this->where('number', $number)->first();
+    }
 }

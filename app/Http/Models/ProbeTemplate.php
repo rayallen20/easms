@@ -288,4 +288,20 @@ class ProbeTemplate extends Model {
             return false;
         }
     }
+
+    public function answer($probeOrm, $answerOrms) {
+        DB::beginTransaction();
+        try {
+            $probeOrm->answerer_num += 1;
+            $probeOrm->save();
+            foreach ($answerOrms as $answerOrm) {
+                $answerOrm->save();
+            }
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
+    }
 }
