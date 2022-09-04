@@ -79,7 +79,8 @@ class ProbeAnswer {
         $config = ProducerConfig::getInstance();
         $config->setMetadataRefreshIntervalMs(10000);
         //  设置broker地址
-        $config->setMetadataBrokerList('123.57.222.77:9092');
+        $kafkaUrl = env("KAFKA_URL");
+        $config->setMetadataBrokerList($kafkaUrl);
         //  设置broker的代理版本
         $config->setBrokerVersion('1.0.0');
         //  只需leader确认消息
@@ -90,6 +91,7 @@ class ProbeAnswer {
         $config->setProduceInterval(500);
         //  创建生产者实例
         $producer = new \Kafka\Producer();
+        // $topic = env('KAFKA_TOPIC');
         $producer->send([
             [
                 'topic' => 'answer',

@@ -23,7 +23,8 @@ class ConsumerKafka extends Command {
     {
         $config = \Kafka\ConsumerConfig::getInstance();
         $config->setMetadataRefreshIntervalMs(10000);
-        $config->setMetadataBrokerList('123.57.222.77:9092');
+        $kafkaUrl = env('KAFKA_URL');
+        $config->setMetadataBrokerList($kafkaUrl);
         $config->setGroupId('test2');
         $config->setBrokerVersion('1.0.0');
         $config->setTopics(['answer']);
