@@ -156,4 +156,10 @@ class Department extends Model {
             ->get();
         return $departments;
     }
+
+    public function findByName($name) {
+        return $this->where('name', $name)
+            ->where('status', Nation::STATUS['normal'])
+            ->first();
+    }
 }

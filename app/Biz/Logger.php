@@ -44,6 +44,7 @@ class Logger {
         'createQuestion' => '创建问题',
         'updateQuestion' => '更新问题',
         'deleteQuestion' => '删除问题',
+        'uploadExcel' => '上传表格'
     ];
 
     /**
@@ -544,7 +545,7 @@ class Logger {
     }
 
     /**
-     * 本方法用于记录删除学生操作操作的日志信息
+     * 本方法用于记录删除问题操作操作的日志信息
      * @access public
      * @author Roach<18410269837@163.com>
      * @return int $code
@@ -553,6 +554,26 @@ class Logger {
         $code = 0;
         $this->module = self::MODULES['probe'];
         $this->operateType = self::OPERATIONS['deleteQuestion'];
+        $this->operateTime = date('Y-m-d H:i:s');
+        $model = new OperateLog();
+        $res = $model->log($this);
+        if (!$res) {
+            $code = Resp::SAVE_DATABASE_FAILED;
+            return $code;
+        }
+        return $code;
+    }
+
+    /**
+     * 本方法用于记录上传学生信息表格操作操作的日志信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @return int $code
+     */
+    public function logUploadExcel(){
+        $code = 0;
+        $this->module = self::MODULES['student'];
+        $this->operateType = self::OPERATIONS['uploadExcel'];
         $this->operateTime = date('Y-m-d H:i:s');
         $model = new OperateLog();
         $res = $model->log($this);

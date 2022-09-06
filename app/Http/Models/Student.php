@@ -4,6 +4,7 @@ namespace App\Http\Models;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class Student extends Model {
     /**
@@ -190,5 +191,21 @@ class Student extends Model {
 
     public function findByNumber($number) {
         return $this->where('number', $number)->first();
+    }
+
+    public function saveOrms($orms) {
+        DB::beginTransaction();
+        try {
+            foreach ($orms as $orm) {
+                $orm->sort = $orm->findMaxId() + 1;
+                $orm->status = self::STATUS['normal'];
+                $orm->save();
+            }
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return false;
+        }
     }
 }

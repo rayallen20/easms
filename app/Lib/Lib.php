@@ -252,4 +252,9 @@ class Lib {
 
         return false;
     }
+
+    public function getNowDatetime() {
+        $time = time();
+        return date('Y-m-d-H-i-s', $time);
+    }
 }

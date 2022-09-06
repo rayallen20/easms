@@ -1,8 +1,13 @@
 <?php
 namespace App\Biz;
 
+use App\Lib\Lib;
 use App\Lib\Pagination;
 use App\Lib\Resp;
+use Illuminate\Support\Facades\App;
+use Maatwebsite\Excel\Files\ExcelFile;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Student {
     /**
@@ -541,5 +546,221 @@ class Student {
 
         $this->fill($studentOrm);
         return $code;
+    }
+
+    /**
+     * 本方法用于读取excel中的内容并创建学生信息
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param UploadedFile $excel 文件对象
+     * @return array
+     */
+    public function readExcel($excel) {
+        $result = [
+            'code' => 0,
+            'exceptionMessage' => '',
+        ];
+        try {
+            $path = env('EXCEL_PATH');
+            $lib = new Lib();
+            $fileName = $lib->getNowDateTime() . "." . $excel->getClientOriginalExtension();
+            $saveFile = $excel->move($path, $fileName);
+        } catch (FileException $e) {
+            $result['code'] = Resp::MOVE_FILE_FAILED;
+            return $result;
+        }
+        $result = self::rowToStudent($path. "/".$fileName);
+        if ($result['code'] != 0) {
+            return $result;
+        }
+        $model = new \App\Http\Models\Student();
+        $saveResult = $model->saveOrms($result['orms']);
+        if (!$saveResult) {
+            $result['code'] = Resp::SAVE_DATABASE_FAILED;
+            return $result;
+        }
+        return $result;
+    }
+
+    private function rowToStudent($fileName) {
+        $result = [
+            'code' => 0,
+            'exceptionMessage' => '',
+            'orms' => [],
+        ];
+        $excelReader = \PHPExcel_IOFactory::load($fileName);
+        $sheet = $excelReader->getSheet(0);
+        $highestRow = $sheet->getHighestRow();
+        if ($highestRow > 100001) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '表格行数不得大于100001行';
+            return $result;
+        }
+
+        $rowArr = [];
+        for ($row = 2; $row <= $highestRow; $row++) {
+            for ($column = 0; $column <= 13; $column++) {
+                $val = $sheet->getCellByColumnAndRow($column, $row)->getValue();
+                $rowArr[$row - 1][] = $val;
+            }
+            $rowResult = self::checkRow($rowArr[$row - 1]);
+            if ($rowResult['code'] != 0) {
+                $result['code'] = $rowResult['code'];
+                $result['exceptionMessage'] = '第' . $row . "行的" . $rowResult['exceptionMessage'];
+                return $result;
+            } else {
+                $result['orms'][] = $rowResult['orm'];
+            }
+        }
+
+        $numbers = array_column($rowArr, 1);
+        $distinctNumbers = array_unique($numbers);
+        if (count($numbers) != count($distinctNumbers)) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '表格中有相同的学号';
+            return $result;
+        }
+        return $result;
+    }
+
+    private function checkRow($row) {
+        $result = [
+            'code' => 0,
+            'exceptionMessage' => '',
+            'orm' => null
+        ];
+        $name = $row[0];
+        $number = (string)$row[1];
+        $idNumber = (string)$row[2];
+        $gender = $row[3];
+        $nation = $row[4];
+        $examArea = $row[5];
+        $departmentName = $row[6];
+        $majorName = $row[7];
+        $majorDirection = $row[8];
+        $grade = $row[9];
+        $class = $row[10];
+        $educationLevel = $row[11];
+        $lengthOfSchool = $row[12];
+        $degree = $row[13];
+
+        $studentOrm = new \App\Http\Models\Student();
+        $studentOrm->name = $name;
+
+        $targetStudentOrm = $studentOrm->findByNumber($number);
+        if ($targetStudentOrm != null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '学号在数据库中已存在';
+            return $result;
+        }
+        $studentOrm->number = $number;
+
+        $lib = new Lib();
+        $isIdNumber = $lib->isIdNumber($idNumber);
+        if (!$isIdNumber) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '身份证号格式不是18位数字或以X结尾的17位数字';
+            return $result;
+        }
+        $studentOrm->id_number = $idNumber;
+
+        if ($gender != "男" && $gender != "女") {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '性别必须为男或女';
+        }
+        if ($gender == "男") {
+            $studentOrm->gender = "1";
+        } else {
+            $studentOrm->gender = "0";
+        }
+
+        $nationModel = new \App\Http\Models\Nation();
+        $nationOrm = $nationModel->findByName($nation);
+        if ($nationOrm == null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '民族不存在';
+            return $result;
+        }
+        $studentOrm->nation_id = $nationOrm->id;
+
+        $examAreaModel = new \App\Http\Models\ExamArea();
+        $examAreaOrm = $examAreaModel->findByName($examArea);
+        if ($examAreaOrm == null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '考区不存在';
+            return $result;
+        }
+        $studentOrm->exam_area_id = $examAreaOrm->id;
+
+        $departmentModel = new \App\Http\Models\Department();
+        $departmentOrm = $departmentModel->findByName($departmentName);
+        if ($departmentOrm == null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '院系不存在';
+            return $result;
+        }
+        $studentOrm->department_id = $departmentOrm->id;
+
+        $major = null;
+        foreach ($departmentOrm->majors as $majorOrm) {
+            if ($majorOrm->status == \App\Http\Models\Major::STATUS['normal'] && $majorName == $majorOrm->name) {
+                $major = $majorOrm;
+                break;
+            }
+        }
+        if ($major == null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '院系下不存在该专业';
+            return $result;
+        }
+        $studentOrm->major_id = $major->id;
+        $studentOrm->major_direction = $majorDirection;
+        $studentOrm->grade = $grade;
+        $studentOrm->class = $class;
+
+        $educationLevelCode = null;
+        foreach (self::EDUCATION_LEVEL as $educationLevelArr) {
+            if ($educationLevel == $educationLevelArr['display']) {
+                $educationLevelCode = $educationLevelArr['code'];
+                break;
+            }
+        }
+        if ($educationLevelCode == null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '培养层次只能为研究生、本科或专科';
+            return $result;
+        }
+        $studentOrm->education_level_code = $educationLevelCode;
+
+        $lengthOfSchoolCode = null;
+        foreach (self::LENGTH_OF_SCHOOL as $lengthOfSchoolArr) {
+            if ($lengthOfSchool == $lengthOfSchoolArr['display']) {
+                $lengthOfSchoolCode = $lengthOfSchoolArr['code'];
+                break;
+            }
+        }
+        if ($lengthOfSchoolCode == null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '学制只能为三年、四年或五年';
+            return $result;
+        }
+        $studentOrm->length_of_school_code = $lengthOfSchoolCode;
+
+        $degreeCode = null;
+        foreach (self::DEGREE as $degreeArr) {
+            if ($degree == $degreeArr['display']) {
+                $degreeCode = $degreeArr['code'];
+                break;
+            }
+        }
+
+        if ($degreeCode == null) {
+            $result['code'] = Resp::PARAM_INVALID;
+            $result['exceptionMessage'] = '学位只能为博士、硕士、学士或无';
+            return $result;
+        }
+        $studentOrm->degree_code = $degreeCode;
+        $result['orm'] = $studentOrm;
+        return $result;
     }
 }

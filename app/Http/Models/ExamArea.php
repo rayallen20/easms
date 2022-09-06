@@ -59,4 +59,10 @@ class ExamArea extends Model {
     public function findById($id) {
         return $this->where('id', $id)->first();
     }
+
+    public function findByName($name) {
+        return $this->where('name', $name)
+            ->where('status', Nation::STATUS['normal'])
+            ->first();
+    }
 }

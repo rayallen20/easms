@@ -988,4 +988,112 @@ class StudentController extends Controller {
         $json = $resp->success([]);
         return $json;
     }
+
+    /**
+     * 本方法用于创建教职工操作
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * user.jwt string 用户jwt(必填)
+     * excel file 用户上传的学生信息excel
+     * @return string $json 返回至前端的json
+     */
+    public function readExcel(Request $request) {
+        // step1 接收参数 校验 start
+        $jwt = $request->input('jwt');
+        $excel = $request->file('excel');
+
+        $params = [
+            'jwt' => $jwt
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+        ];
+
+        $lib = new Lib();
+        $resp = new Resp();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+
+        if (!$request->hasFile('excel')) {
+            $json = $resp->paramInvalid('请选择要上传的excel文件', []);
+            return $json;
+        }
+
+        if (!$request->file('excel')->isValid()) {
+            $json = $resp->uploadFileFailed([]);
+            return $json;
+        }
+
+        $fileExtension = $request->file('excel')->extension();
+        if ($fileExtension != 'xls' && $fileExtension != 'xlsx') {
+            $json = $resp->paramInvalid('上传文件的类型必须为.xls或.xlsx', []);
+            return $json;
+        }
+        // step1 接收参数 校验 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $studentBiz = new Student();
+        $result = $studentBiz->readExcel($excel);
+        if ($request['code'] == Resp::MOVE_FILE_FAILED) {
+            $json = $resp->moveFileFailed([]);
+            return $json;
+        }
+        if ($result['code'] == Resp::PARAM_INVALID) {
+            $json = $resp->paramInvalid($result['exceptionMessage'], []);
+            return $json;
+        }
+
+        if ($request['code'] == Resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 记录日志 start
+        $logger = new Logger($request->getClientIp(), $userBiz, '');
+        $code = $logger->logUploadExcel();
+        if ($code == $resp::SAVE_DATABASE_FAILED) {
+            $json = $resp->DBFailed([]);
+            return $json;
+        }
+        // step4. 记录日志 end
+
+        $json = $resp->success([]);
+        return $json;
+    }
 }
