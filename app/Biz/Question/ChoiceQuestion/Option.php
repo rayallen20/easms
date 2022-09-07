@@ -36,6 +36,11 @@ class Option {
     public $updatedTime;
 
     /**
+     * @var int $beChooseNum 选项被选择的次数
+    */
+    public $beChooseNum;
+
+    /**
      * @var float $rate 该选项被选择的比例
     */
     public $rate;

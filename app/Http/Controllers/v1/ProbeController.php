@@ -964,4 +964,101 @@ class ProbeController extends Controller {
         $json = $resp->success($data);
         return $json;
     }
+
+    /**
+     * 本方法用于生成指定问卷下的作答情况信息 以word文件的形式保存
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param Request $request 请求组件
+     * 实际参数为:
+     * jwt string 用户jwt
+     * probe.id int 问卷id
+     * currentPage int 当前页数
+     * itemPerPage int 每页显示信息条数
+     * @return string $json 返回的JSON
+     */
+    public function genWord(Request $request) {
+        // step1. 接受参数 验证规则 start
+        $jwt = $request->input('user.jwt');
+        $probeId = $request->input('probe.id');
+
+        $params = [
+            'jwt' => $jwt,
+            'probeId' => $probeId,
+        ];
+
+        $rules = [
+            'jwt' => 'required|string',
+            'probeId' => 'required|int|min:1',
+        ];
+
+        $exceptionMessages = [
+            'jwt.required' => 'jwt不能为空',
+            'jwt.string' => 'jwt内容必须为字符串',
+            'probeId.required' => '调研模板id不能为空',
+            'probeId.int' => '调研模板id必须为整型',
+            'probeId.min' => '调研模板id不得小于1',
+        ];
+
+        $resp = new Resp();
+
+        $lib = new Lib();
+        $errors = $lib->validate($params, $rules, $exceptionMessages);
+        if ($errors != null) {
+            $json = $resp->paramInvalid($errors[0], []);
+            return $json;
+        }
+        // step1. 接受参数 验证规则 end
+
+        // step2. 鉴权 start
+        $userBiz = new User();
+        $code = $userBiz->authenticate($jwt);
+        if ($code == Resp::PARSE_JWT_FAILED) {
+            $json = $resp->parseJwtFailed([]);
+            return $json;
+        }
+
+        if ($code == Resp::JWT_INVALID) {
+            $json = $resp->jwtInvalid([]);
+            return $json;
+        }
+
+        if ($code == $resp::USER_HAS_BEEN_DELETED) {
+            $json = $resp->userHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($userBiz->role->name != 'super_admin') {
+            $json = $resp->permissionDeny([]);
+            return $json;
+        }
+        // step2. 鉴权 end
+
+        // step3. 处理逻辑 start
+        $probeBiz = new ProbeTemplate();
+        $result = $probeBiz->genWord($probeId);
+        if ($result['code'] == Resp::PROBE_NOT_EXIST) {
+            $json = $resp->probeNotExist([]);
+            return $json;
+        }
+
+        if ($result['code'] == Resp::PROBE_HAS_BEEN_DELETE) {
+            $json = $resp->probeHasBeenDeleted([]);
+            return $json;
+        }
+
+        if ($result['code'] == Resp::SAVE_WORD_FAILED) {
+            $json = $resp->saveWordFailed([]);
+            return $json;
+        }
+        // step3. 处理逻辑 end
+
+        // step4. 封装返回值 start
+        $data = [
+            'name' => $result['fileName'],
+        ];
+        $json = $resp->success($data);
+        return $json;
+        // step4. 封装返回值 end
+    }
 }

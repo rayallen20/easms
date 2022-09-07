@@ -1,6 +1,7 @@
 <?php
 namespace App\Biz;
 
+use App\Biz\Question\ChoiceQuestion\ChoiceQuestion;
 use App\Biz\Question\ChoiceQuestion\MultipleChoice;
 use App\Biz\Question\ChoiceQuestion\SingleChoice;
 use App\Biz\Question\Question;
@@ -8,8 +9,10 @@ use App\Biz\Question\ShortQuestion\ShortQuestion;
 use App\Http\Models\MultipleChoiceStem;
 use App\Http\Models\ShortStem;
 use App\Http\Models\SingleChoiceStem;
+use App\Lib\Lib;
 use App\Lib\Pagination;
 use App\Lib\Resp;
+use PhpOffice\PhpWord\PhpWord;
 
 class ProbeTemplate {
     /**
@@ -369,5 +372,68 @@ class ProbeTemplate {
             $question->probe = $this;
             $question->count();
         }
+    }
+
+    public function genWord($id) {
+        $result = [
+            'code' => 0,
+            'fileName' => ''
+        ];
+        $result['code'] = $this->exist($id);
+        if ($result['code'] == Resp::PROBE_NOT_EXIST) {
+            return $result;
+        }
+
+        if ($result['code'] == Resp::PROBE_HAS_BEEN_DELETE) {
+            return $result;
+        }
+
+        foreach ($this->questions as $question) {
+            $question->probe = $this;
+            $question->count();
+        }
+
+        $phpWord = new PhpWord();
+        $section = $phpWord->addSection();
+        $section->addText($this->name, ["name" => "Tahoma", "size" => 25]);
+
+        foreach ($this->questions as $question) {
+            if ($question instanceof ChoiceQuestion) {
+                $section->addText($question->stem, ["name" => "Tahoma", "size" => 15]);
+                $categories = [];
+                $series = [];
+                foreach ($question->options as $option) {
+                    $categories[] = $option->content;
+                    $series[] = $option->beChooseNum;
+                }
+
+                if ($question->displayType == ChoiceQuestion::DISPLAY_TYPE['pieChart']) {
+                    $section->addChart('pie', $categories, $series);
+                }
+                if ($question->displayType == ChoiceQuestion::DISPLAY_TYPE['barGraph']) {
+                    $section->addChart('column', $categories, $series);
+                }
+            }
+
+            if ($question instanceof ShortQuestion) {
+                $section->addText($question->stem, ["name" => "Tahoma", "size" => 15]);
+                foreach ($question->answers as $answer) {
+                    $section->addText($answer->content);
+                }
+            }
+        }
+
+        $lib = new Lib();
+        $path = env('WORD_PATH');
+        $name = $this->name.$lib->getNowDatetime().".docx";
+        $wordName = $path."/".$name;
+        $saveResult = $phpWord->save($wordName);
+        if (!$saveResult) {
+            $result['code'] = Resp::SAVE_WORD_FAILED;
+            return $result;
+        }
+
+        $result['fileName'] = $name;
+        return $result;
     }
 }

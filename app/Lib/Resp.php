@@ -247,6 +247,11 @@ class Resp {
      */
     const MOVE_FILE_FAILED = 10048;
 
+    /**
+     * @const int SAVE_WORD_FAILED 本状态码表示保存word文件失败
+    */
+    const SAVE_WORD_FAILED = 10049;
+
     const MESSAGE = [
         self::SUCCESS => '操作成功',
         self::ACCOUNT_NOT_EXIST => '账号不存在',
@@ -296,6 +301,7 @@ class Resp {
         self::STUDENT_HAS_BEEN_ANSWERED => '该问卷已被作答,无法重复填写',
         self::UPLOAD_FILE_FAILED => '文件上传失败,请重新上传',
         self::MOVE_FILE_FAILED => '文件移动失败,请重新上传',
+        self::SAVE_WORD_FAILED => '保存word文件失败',
     ];
 
     /**
@@ -859,6 +865,17 @@ class Resp {
      */
     public function moveFileFailed($data) {
         return self::generate(self::MOVE_FILE_FAILED, self::MESSAGE[self::MOVE_FILE_FAILED], $data);
+    }
+
+    /**
+     * 本方法用于生成在保存word文件失败时返回至前端的JSON
+     * @access public
+     * @author Roach<18410269837@163.com>
+     * @param map<string:interface> $data 有效载荷
+     * @return string 参数错误的JSON
+     */
+    public function saveWordFailed($data) {
+        return self::generate(self::SAVE_WORD_FAILED, self::MESSAGE[self::SAVE_WORD_FAILED], $data);
     }
 }
 

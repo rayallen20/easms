@@ -16,6 +16,7 @@ class SingleChoiceAnswer {
 
         foreach ($this->question->options as $option) {
             $orm = $model->findByStemIdAndOptionId($question->id, $option->id);
+            $option->beChooseNum = $orm->be_chosen_number;
             $option->rate = round($orm->be_chosen_number / $this->probe->answererNum, self::RATE_PRECISION);
         }
     }
