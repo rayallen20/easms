@@ -257,6 +257,12 @@ class Student {
         $this->class = $class;
 
         $model = new \App\Http\Models\Student();
+        // 确认是否有相同的学号
+        $sameNumberOrm = $model->findByNumber($number);
+        if ($sameNumberOrm != null) {
+            $code = Resp::SAME_NUMBER_STUDENT_EXIST;
+            return $code;
+        }
         $result = $model->create($this);
         if (!$result) {
             $code = Resp::SAVE_DATABASE_FAILED;

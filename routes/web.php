@@ -66,3 +66,4 @@ Route::post('v1/probe/answer', 'v1\AnswerController@answer');
 Route::post('v1/probe/count', 'v1\ProbeController@count');
 Route::post('v1/student/readExcel', 'v1\StudentController@readExcel');
 Route::post('v1/probe/genWord', 'v1\ProbeController@genWord');
+Route::post('v1/logger/list', 'v1\OperationController@list');

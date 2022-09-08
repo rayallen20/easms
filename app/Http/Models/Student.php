@@ -190,7 +190,9 @@ class Student extends Model {
     }
 
     public function findByNumber($number) {
-        return $this->where('number', $number)->first();
+        return $this->where('number', $number)
+            ->where('status', Student::STATUS['normal'])
+            ->first();
     }
 
     public function saveOrms($orms) {

@@ -251,6 +251,11 @@ class StudentController extends Controller {
             $json = $resp->examAreaHasBeenDeleted([]);
             return $json;
         }
+
+        if ($code == Resp::SAME_NUMBER_STUDENT_EXIST) {
+            $json = $resp->sameNumberStudentExist([]);
+            return $json;
+        }
         // step3. 处理逻辑 end
 
         // step4. 记录日志 start

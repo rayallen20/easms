@@ -3,6 +3,7 @@ namespace App\Http\Models;
 
 use App\Biz\Logger;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OperateLog extends Model {
     /**
@@ -36,6 +37,14 @@ class OperateLog extends Model {
     protected $dateFormat = 'Y-m-d H:i:s';
 
     /**
+     * 本方法用于定义本表(operate_log)与user表之间通过operate_log.user_id和user.id建立的1对1关系
+     * @return HasOne
+     */
+    public function user() {
+        return $this->hasOne('App\Http\Models\User', 'id', 'user_id');
+    }
+
+    /**
      * 本方法用于记录日志
      * @access public
      * @author Roach<18410269837@163.com>
@@ -50,5 +59,17 @@ class OperateLog extends Model {
         $this->ip = $logger->ip;
         $this->comment = $logger->comment;
         return $this->save();
+    }
+
+    public function findLogs($offset, $limit) {
+        $logs = $this->orderBy('id', 'asc')
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+        return $logs;
+    }
+
+    public function countLoggers() {
+        return $this->count();
     }
 }

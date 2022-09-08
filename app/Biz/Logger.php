@@ -2,6 +2,7 @@
 namespace App\Biz;
 
 use App\Http\Models\OperateLog;
+use App\Lib\Pagination;
 use App\Lib\Resp;
 
 class Logger {
@@ -46,6 +47,8 @@ class Logger {
         'deleteQuestion' => '删除问题',
         'uploadExcel' => '上传表格'
     ];
+
+    public $id;
 
     /**
      * @var string $module 操作所属模块
@@ -582,5 +585,41 @@ class Logger {
             return $code;
         }
         return $code;
+    }
+
+    public function list($currentPage, $itemPerPage) {
+        $result = [
+            'logs' => [],
+            'pagination' => null,
+            'code' => 0
+        ];
+
+        $pagination = new Pagination($currentPage, $itemPerPage);
+        $offset = $pagination->calcOffset();
+
+        $model = new OperateLog();
+        $loggerCollection = $model->findLogs($offset, $itemPerPage);
+        for ($i = 0; $i < count($loggerCollection) - 1; $i++) {
+            $loggerOrm = $loggerCollection[$i];
+            $logger = new Logger(null, null, null);
+            $logger->fill($loggerOrm);
+            $result['logs'][$i] = $logger;
+        }
+
+        $totalLoggers = $model->countLoggers();
+        $pagination->calcTotalPage($totalLoggers);
+        $result['pagination'] = $pagination;
+        return $result;
+    }
+
+    public function fill($orm) {
+        $this->id = $orm->id;
+        $this->module = $orm->module;
+        $this->operateType = $orm->operate_type;
+        $this->operateTime = (string)$orm->operate_time;
+        $this->ip = $orm->ip;
+        $this->comment = $orm->comment;
+        $this->user = new User();
+        $this->user->fill($orm->user);
     }
 }
